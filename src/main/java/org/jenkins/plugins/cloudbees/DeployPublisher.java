@@ -1,5 +1,6 @@
 package org.jenkins.plugins.cloudbees;
 
+import com.cloudbees.api.BeesClient;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -19,6 +20,12 @@ public class DeployPublisher extends Recorder {
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
 
+        String apiUrl = "https://api.cloudbees.com";
+        String apiKey = ""; //from CloudBees account
+        String secret = ""; //from CloudBees account
+        BeesClient client = new BeesClient(apiUrl, apiKey, secret, "xml", "1.0");
+
+        //client.tailLog("", "", listener.getLogger());
         return true;
     }
 
