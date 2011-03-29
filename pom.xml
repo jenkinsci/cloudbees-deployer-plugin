@@ -40,8 +40,8 @@
 
   <repositories>
     <repository>
-      <id>olamy.cloudbees.snapshots</id>
-      <url>https://repository-olamy.forge.cloudbees.com/snapshot/</url>
+      <id>oss.sonatype.snapshots</id>
+      <url>https://oss.sonatype.org/content/groups/public</url>
       <releases>
         <enabled>false</enabled>
       </releases>
