@@ -20,6 +20,7 @@ import com.cloudbees.api.AccountKeysResponse;
 import com.cloudbees.api.ApplicationInfo;
 import com.cloudbees.api.ApplicationListResponse;
 import com.cloudbees.api.BeesClient;
+import com.cloudbees.api.BeesClientException;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.AbstractProject;
@@ -41,6 +42,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Olivier Lamy
@@ -142,20 +144,25 @@ public class CloudbeesProjectProperty extends JobProperty<AbstractProject<?, ?>>
             }
             System.out.println("ckeck secretKey:" + secretKey + ",with apiKey:"+apiKey);
 
-            // configurable ?
-            String apiUrl = "https://api.cloudbees.com/api";
-            BeesClient client = new BeesClient(apiUrl, apiKey, secretKey, "json", "1.0");
+            CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
+                new CloudbeesApiHelper.CloudbeesApiRequest( CloudbeesApiHelper.CLOUDBEES_API_URL, apiKey, secretKey );
+
             try
             {
-                ApplicationListResponse applicationListResponse = client.applicationList();
-                List<ApplicationInfo> applicationInfos = applicationListResponse.getApplications();
-                for(ApplicationInfo applicationInfo : applicationInfos) {
-                    System.out.println("applicationInfo:"+applicationInfo.getId());
+                CloudbeesApiHelper.ping( apiRequest );
+            } catch ( BeesClientException e ) {
+                if (e.getError() == null)
+                {
+                    LOGGER.log(Level.SEVERE, "Error during calling cloudbees api", e);
+                    return FormValidation.error("Unknown error check server logs");
+                } else {
+                    return FormValidation.error(e.getError().getMessage());
                 }
             }
             catch ( Exception e )
             {
-                e.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Error during calling cloudbees api", e);
+                return FormValidation.error("Unknown error check server logs");
             }
             return FormValidation.ok();
 		}
@@ -168,4 +175,7 @@ public class CloudbeesProjectProperty extends JobProperty<AbstractProject<?, ?>>
             return accounts.toArray( new CloudbeesAccount[0] );
         }
     }
+
+
+    private static final Logger LOGGER = Logger .getLogger( CloudbeesProjectProperty.class.getName() );
 }
