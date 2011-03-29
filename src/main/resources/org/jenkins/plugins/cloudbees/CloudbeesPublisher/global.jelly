@@ -5,15 +5,15 @@
         <table width="100%">
           <f:entry title="Name" help="">
             <f:textbox name="cloudbeesaccount.name" value="${account.name}"
-                checkUrl="'${rootURL}/jobProperty/CloudbeesProjectProperty/nameCheck?name='+escape(this.value)" />
+                checkUrl="'${rootURL}/publisher/CloudbeesPublisher/nameCheck?name='+escape(this.value)" />
           </f:entry>
           <f:entry title="apiKey" help="">
             <f:textbox name="cloudbeesaccount.apiKey" value="${account.apiKey}"
-                checkUrl="'${rootURL}/jobProperty/CloudbeesProjectProperty/apiKeyCheck?apiKey='+escape(this.value)" />
+                checkUrl="'${rootURL}/publisher/CloudbeesPublisher/apiKeyCheck?apiKey='+escape(this.value)" />
           </f:entry>
           <f:entry title="secretKey" help="">
             <f:textbox name="cloudbeesaccount.secretKey" value="${account.secretKey}"
-                checkUrl="'${rootURL}/jobProperty/CloudbeesProjectProperty/secretKeyCheck?secretKey='+escape(this.value)+'&amp;apiKey='+escape(Form.findMatchingInput(this,'cloudbeesaccount.apiKey').value)" />
+                checkUrl="'${rootURL}/publisher/CloudbeesPublisher/secretKeyCheck?secretKey='+escape(this.value)+'&amp;apiKey='+escape(Form.findMatchingInput(this,'cloudbeesaccount.apiKey').value)" />
           </f:entry>
           <f:entry title="">
             <div align="right">

@@ -78,7 +78,7 @@ public class CloudbeesPublisher extends Notifier {
 
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        LOGGER.info("perform ");
+        LOGGER.info("CloudbeesPublisher :: perform ");
         return super.perform(build, launcher, listener);
     }
 
@@ -98,7 +98,7 @@ public class CloudbeesPublisher extends Notifier {
         public String getDisplayName()
         {
             // TODO i18n
-            return "Cloudbess Deployement";
+            return "Cloudbess Deployment";
         }
 
         @Override
