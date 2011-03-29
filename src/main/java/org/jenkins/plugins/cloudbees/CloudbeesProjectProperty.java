@@ -64,6 +64,18 @@ public class CloudbeesProjectProperty extends JobProperty<AbstractProject<?, ?>>
         this.accountName = accountName;
     }
 
+    public CloudbeesAccount getCloudbeesAccount() {
+        CloudbeesAccount[] accounts =  DESCRIPTOR.getAccounts();
+        if (accountName == null && accounts.length > 0) {
+            // return default
+            return accounts[0];
+        }
+		for (CloudbeesAccount account : accounts) {
+			if (account.name.equals(accountName))
+				return account;
+		}
+		return null;
+    }
 
 	@Extension
 	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
