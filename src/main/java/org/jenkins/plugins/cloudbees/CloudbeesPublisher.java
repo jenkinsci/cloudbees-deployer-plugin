@@ -15,6 +15,8 @@
  */
 package org.jenkins.plugins.cloudbees;
 
+import com.cloudbees.api.ApplicationInfo;
+import com.cloudbees.api.ApplicationListResponse;
 import com.cloudbees.api.BeesClientException;
 import hudson.Extension;
 import hudson.Launcher;
@@ -30,6 +32,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
@@ -45,8 +48,12 @@ public class CloudbeesPublisher extends Notifier {
 
     public final String accountName;
 
+    public final String applicationId;
+
+    public List<ApplicationInfo> applicationInfos;
+
     @DataBoundConstructor
-    public CloudbeesPublisher(String accountName) {
+    public CloudbeesPublisher(String accountName, String applicationId) throws Exception {
         if (accountName == null) {
             // revert to first one
             CloudbeesAccount[] accounts =  DESCRIPTOR.getAccounts();
@@ -56,6 +63,13 @@ public class CloudbeesPublisher extends Notifier {
             }
         }
         this.accountName = accountName;
+
+        ApplicationListResponse applicationListResponse =
+                CloudbeesApiHelper.applicationsList(new CloudbeesApiHelper.CloudbeesApiRequest(CloudbeesApiHelper.CLOUDBEES_API_URL, getCloudbeesAccount()));
+        applicationInfos = applicationListResponse.getApplications();//.get(0).getTitle() .getId();
+        System.out.println("found " + applicationInfos.size()  + " applications");
+
+        this.applicationId = applicationId;
     }
 
     public CloudbeesAccount getCloudbeesAccount() {
