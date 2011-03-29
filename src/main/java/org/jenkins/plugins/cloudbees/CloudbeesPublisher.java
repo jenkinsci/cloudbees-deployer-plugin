@@ -15,19 +15,15 @@
  */
 package org.jenkins.plugins.cloudbees;
 
-import com.cloudbees.api.AccountInfo;
-import com.cloudbees.api.AccountKeysResponse;
-import com.cloudbees.api.ApplicationInfo;
-import com.cloudbees.api.ApplicationListResponse;
-import com.cloudbees.api.BeesClient;
 import com.cloudbees.api.BeesClientException;
 import hudson.Extension;
+import hudson.Launcher;
 import hudson.Util;
-import hudson.model.AbstractProject;
-import hudson.model.Hudson;
-import hudson.model.Job;
-import hudson.model.JobProperty;
-import hudson.model.JobPropertyDescriptor;
+import hudson.model.*;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Notifier;
+import hudson.tasks.Publisher;
 import hudson.util.CopyOnWriteList;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
@@ -38,8 +34,6 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,12 +41,12 @@ import java.util.logging.Logger;
 /**
  * @author Olivier Lamy
  */
-public class CloudbeesProjectProperty extends JobProperty<AbstractProject<?, ?>> {
+public class CloudbeesPublisher extends Notifier {
 
     public final String accountName;
 
     @DataBoundConstructor
-    public CloudbeesProjectProperty(String accountName) {
+    public CloudbeesPublisher(String accountName) {
         if (accountName == null) {
             // revert to first one
             CloudbeesAccount[] accounts =  DESCRIPTOR.getAccounts();
@@ -77,15 +71,26 @@ public class CloudbeesProjectProperty extends JobProperty<AbstractProject<?, ?>>
 		return null;
     }
 
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.BUILD;
+    }
+
+
+    @Override
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        LOGGER.info("perform ");
+        return super.perform(build, launcher, listener);
+    }
+
 	@Extension
 	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-	public static final class DescriptorImpl extends JobPropertyDescriptor {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         private final CopyOnWriteList<CloudbeesAccount> accounts = new CopyOnWriteList<CloudbeesAccount>();
 
         public DescriptorImpl() {
-            super(CloudbeesProjectProperty.class);
+            super(CloudbeesPublisher.class);
             load();
         }
 
@@ -93,23 +98,17 @@ public class CloudbeesProjectProperty extends JobProperty<AbstractProject<?, ?>>
         public String getDisplayName()
         {
             // TODO i18n
-            return "Cloudbess Accounts";
+            return "Cloudbess Deployement";
         }
 
-		public boolean isApplicable(Class<? extends Job> jobType) {
-			return AbstractProject.class.isAssignableFrom(jobType);
-		}
-
-		@Override
-		public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData)
-				throws FormException {
-			CloudbeesProjectProperty cpp = req.bindParameters(
-					CloudbeesProjectProperty.class, "cloudbeesaccount.");
+        @Override
+		public Publisher newInstance(StaplerRequest req, JSONObject formData) {
+			CloudbeesPublisher cpp = req.bindParameters(
+					CloudbeesPublisher.class, "cloudbeesaccount.");
 			if (cpp.accountName == null) cpp = null;
 			return cpp;
 		}
 
-		@Override
 		public boolean configure(StaplerRequest req, JSONObject formData) {
             List<CloudbeesAccount> accountList = req.bindParametersToList( CloudbeesAccount.class, "cloudbeesaccount." );
 			accounts.replaceBy( accountList );
@@ -185,8 +184,14 @@ public class CloudbeesProjectProperty extends JobProperty<AbstractProject<?, ?>>
         public CloudbeesAccount[] getAccounts() {
             return accounts.toArray( new CloudbeesAccount[0] );
         }
+
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+          // check if type of FreeStyleProject.class or MavenModuleSet.class
+          return true;
+        }
     }
 
 
-    private static final Logger LOGGER = Logger .getLogger( CloudbeesProjectProperty.class.getName() );
+    private static final Logger LOGGER = Logger .getLogger( CloudbeesPublisher.class.getName() );
 }
