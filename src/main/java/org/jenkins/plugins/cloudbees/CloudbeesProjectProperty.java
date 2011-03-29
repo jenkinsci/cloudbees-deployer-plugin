@@ -17,6 +17,8 @@ package org.jenkins.plugins.cloudbees;
 
 import com.cloudbees.api.AccountInfo;
 import com.cloudbees.api.AccountKeysResponse;
+import com.cloudbees.api.ApplicationInfo;
+import com.cloudbees.api.ApplicationListResponse;
 import com.cloudbees.api.BeesClient;
 import hudson.Extension;
 import hudson.Util;
@@ -141,14 +143,14 @@ public class CloudbeesProjectProperty extends JobProperty<AbstractProject<?, ?>>
             System.out.println("ckeck secretKey:" + secretKey + ",with apiKey:"+apiKey);
 
             // configurable ?
-            String apiUrl = "https://api.cloudbees.com";
-            BeesClient client = new BeesClient(apiUrl, apiKey, secretKey, "xml", "1.0");
+            String apiUrl = "https://api.cloudbees.com/api";
+            BeesClient client = new BeesClient(apiUrl, apiKey, secretKey, "json", "1.0");
             try
             {
-                //AccountKeysResponse accountKeysResponse = client.accountKeys( null, apiKey,secretKey );
-                List<AccountInfo> accountInfos = client.accountList().getAccounts();
-                for(AccountInfo accountInfo : accountInfos) {
-                    System.out.println("accountInfo:"+accountInfo.getName());
+                ApplicationListResponse applicationListResponse = client.applicationList();
+                List<ApplicationInfo> applicationInfos = applicationListResponse.getApplications();
+                for(ApplicationInfo applicationInfo : applicationInfos) {
+                    System.out.println("applicationInfo:"+applicationInfo.getId());
                 }
             }
             catch ( Exception e )
