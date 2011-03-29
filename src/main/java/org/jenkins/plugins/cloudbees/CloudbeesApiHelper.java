@@ -24,6 +24,9 @@ import com.cloudbees.api.BeesClient;
 public class CloudbeesApiHelper
 {
 
+    // to display api call in System.out
+    public static boolean verbose = Boolean.getBoolean( "CloudbeesApiHelper.verbose" );
+
     // configurable ?
     public static String CLOUDBEES_API_URL = "https://api.cloudbees.com/api";
 
@@ -47,6 +50,7 @@ public class CloudbeesApiHelper
     private static BeesClient getBeesClient(CloudbeesApiRequest cloudbeesApiRequest) {
         BeesClient client =
             new BeesClient(cloudbeesApiRequest.url, cloudbeesApiRequest.apiKey, cloudbeesApiRequest.secretKey, "xml", "1.0");
+        client.setVerbose( CloudbeesApiHelper.verbose );
         return client;
     }
 
