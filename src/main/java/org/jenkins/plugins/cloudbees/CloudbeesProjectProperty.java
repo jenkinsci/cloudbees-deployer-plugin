@@ -142,7 +142,6 @@ public class CloudbeesProjectProperty extends JobProperty<AbstractProject<?, ?>>
                 // TODO i18n
                 return FormValidation.error("apiKey cannot be empty");
             }
-            System.out.println("ckeck secretKey:" + secretKey + ",with apiKey:"+apiKey);
 
             CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
                 new CloudbeesApiHelper.CloudbeesApiRequest( CloudbeesApiHelper.CLOUDBEES_API_URL, apiKey, secretKey );
