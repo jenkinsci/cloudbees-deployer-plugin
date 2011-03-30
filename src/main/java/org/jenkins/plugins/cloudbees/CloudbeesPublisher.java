@@ -50,8 +50,6 @@ public class CloudbeesPublisher extends Notifier {
 
     public final String applicationId;
 
-    public List<ApplicationInfo> applicationInfos;
-
     @DataBoundConstructor
     public CloudbeesPublisher(String accountName, String applicationId) throws Exception {
         if (accountName == null) {
@@ -63,11 +61,6 @@ public class CloudbeesPublisher extends Notifier {
             }
         }
         this.accountName = accountName;
-
-        ApplicationListResponse applicationListResponse =
-                CloudbeesApiHelper.applicationsList(new CloudbeesApiHelper.CloudbeesApiRequest(CloudbeesApiHelper.CLOUDBEES_API_URL, getCloudbeesAccount()));
-        applicationInfos = applicationListResponse.getApplications();//.get(0).getTitle() .getId();
-        System.out.println("found " + applicationInfos.size()  + " applications");
 
         this.applicationId = applicationId;
     }
@@ -204,6 +197,45 @@ public class CloudbeesPublisher extends Notifier {
           // check if type of FreeStyleProject.class or MavenModuleSet.class
           return true;
         }
+
+
+        public AutoCompletionCandidates doAutoCompleteApplications(@QueryParameter String value, @QueryParameter String cloudbeesAccountName)
+            throws Exception
+        {
+
+            System.out.println( "in doAutoCompleteApplications value:"+value+",cloudbeesAccountName"+cloudbeesAccountName);
+            CloudbeesAccount cloudbeesAccount = getCloudbeesAccount( cloudbeesAccountName );
+
+            ApplicationListResponse applicationListResponse =
+                    CloudbeesApiHelper.applicationsList(new CloudbeesApiHelper.CloudbeesApiRequest(CloudbeesApiHelper.CLOUDBEES_API_URL,cloudbeesAccount ));
+            List<ApplicationInfo> applicationInfos = applicationListResponse.getApplications();
+            System.out.println( "found " + applicationInfos.size() + " applications" );
+
+            AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+            for (ApplicationInfo applicationInfo : applicationInfos) {
+                if (StringUtils.startsWith( applicationInfo.getTitle(), value )) {
+                    System.out.println("found candidate " + applicationInfo.getTitle());
+                    candidates.add( applicationInfo.getTitle(), applicationInfo.getId() );
+                }
+            }
+
+            return candidates;
+        }
+
+        public static CloudbeesAccount getCloudbeesAccount(String cloudbeesAccountName)
+        {
+            CloudbeesAccount[] accounts =  DESCRIPTOR.getAccounts();
+            if (cloudbeesAccountName == null && accounts.length > 0) {
+                // return default
+                return accounts[0];
+            }
+            for (CloudbeesAccount account : accounts) {
+                if (account.name.equals(cloudbeesAccountName))
+                    return account;
+            }
+            return null;
+        }
+
     }
 
 

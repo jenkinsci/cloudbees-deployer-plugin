@@ -1,22 +1,14 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${descriptor.accounts.size() &gt; 0}">
     <!-- show the selection only when there's something to select -->
-    <f:entry title="${%Cloudbees Deployment}">
-      <select class="setting-input" name="cloudbeesaccount.siteName" onchange="changeSite('this')">
+    <f:entry title="${%Cloudbees Site}">
+      <select class="setting-input" name="cloudbeesaccount.accountName">
         <j:forEach var="s" items="${descriptor.accounts}">
           <f:option selected="${s.name==instance.accountName}">${s.name}</f:option>
         </j:forEach>
       </select>
-      <select class="setting-input" name="cloudbeesaccount.applicationId" onchange="changeSite('this')">
-        <j:forEach var="s" items="${descriptor.applicationInfos}">
-          <f:option selected="${s.id==instance.applicationId}">${s.title}</f:option>
-        </j:forEach>
-      </select>
+      <f:textbox name="cloudbeesaccount.applicationId" value="${it.applicationId}"
+        autoCompleteField="applications"/>
     </f:entry>
   </j:if>
-  <script><![CDATA[
-    function changeSite(form) {
-      alert('foo');
-     }
-  ]]></script>
 </j:jelly>
