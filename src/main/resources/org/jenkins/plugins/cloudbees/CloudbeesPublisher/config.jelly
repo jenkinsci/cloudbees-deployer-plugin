@@ -7,8 +7,12 @@
           <f:option selected="${s.name==instance.accountName}">${s.name}</f:option>
         </j:forEach>
       </select>
-      <f:textbox name="cloudbeesaccount.applicationId" value="${it.applicationId}"
-        autoCompleteField="applications"/>
+      <f:textbox name="cloudbeesaccount.applicationId" value="${instance.applicationId}"
+          checkUrl="'${rootURL}/publisher/CloudbeesPublisher/applicationIdCheck?applicationId='+escape(this.value)+'&amp;cloudbeesAccountName='+escape(Form.findMatchingInput(this,'cloudbeesaccount.accountName').value)" />
+        <!--
+        TODO find a way to accountName too to the autoCompleteUrl
+        autoCompleteField="applications" />
+        -->
     </f:entry>
   </j:if>
 </j:jelly>

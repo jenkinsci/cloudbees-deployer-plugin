@@ -37,6 +37,8 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -198,11 +200,54 @@ public class CloudbeesPublisher extends Notifier {
           return true;
         }
 
+		public FormValidation doApplicationIdCheck(@QueryParameter final String applicationId, @QueryParameter final String cloudbeesAccountName)
+				throws IOException, ServletException {
+            try {
 
-        public AutoCompletionCandidates doAutoCompleteApplications(@QueryParameter String value, @QueryParameter String cloudbeesAccountName)
+                if (StringUtils.isBlank( applicationId )) {
+                    // TODO i18n
+                    return FormValidation.error("applicationId cannot be empty");
+                }
+
+                CloudbeesAccount cloudbeesAccount = getCloudbeesAccount( cloudbeesAccountName );
+                ApplicationListResponse applicationListResponse =
+                        CloudbeesApiHelper.applicationsList(new CloudbeesApiHelper.CloudbeesApiRequest(CloudbeesApiHelper.CLOUDBEES_API_URL,cloudbeesAccount ));
+                List<ApplicationInfo> applicationInfos = applicationListResponse.getApplications();
+
+                List<String> applicationIds = new ArrayList<String>(applicationInfos.size());
+
+                AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+                for (ApplicationInfo applicationInfo : applicationInfos) {
+                    if (StringUtils.equals( applicationInfo.getId(), applicationId )) {
+                        return FormValidation.ok();
+                    }
+                    applicationIds.add( applicationInfo.getId() );
+                }
+                StringBuilder sb = new StringBuilder(  );
+
+                for (String appId : applicationIds) {
+                    sb.append( appId + " " );
+                }
+
+                return FormValidation.error( "possible applicationIds are " + sb.toString() );
+            } catch ( Exception e ) {
+              return FormValidation.error( e, "error during check applicationId " + e.getMessage() );
+            }
+		}
+
+        // TODO fix those try to find a way to pass cloudbeesAccountName in autoCompleteUrl
+        public AutoCompletionCandidates doAutoCompleteApplications(StaplerRequest staplerRequest )
             throws Exception
         {
 
+            Enumeration enumeration = staplerRequest.getParameterNames();
+            while ( enumeration.hasMoreElements() )
+            {
+                System.out.println("name " + (String) enumeration.nextElement());
+            }
+
+            String value = staplerRequest.getParameter( "value" );
+            String cloudbeesAccountName = staplerRequest.getParameter( "cloudbeesAccountName" );
             System.out.println( "in doAutoCompleteApplications value:"+value+",cloudbeesAccountName"+cloudbeesAccountName);
             CloudbeesAccount cloudbeesAccount = getCloudbeesAccount( cloudbeesAccountName );
 
@@ -213,9 +258,9 @@ public class CloudbeesPublisher extends Notifier {
 
             AutoCompletionCandidates candidates = new AutoCompletionCandidates();
             for (ApplicationInfo applicationInfo : applicationInfos) {
-                if (StringUtils.startsWith( applicationInfo.getTitle(), value )) {
-                    System.out.println("found candidate " + applicationInfo.getTitle());
-                    candidates.add( applicationInfo.getTitle(), applicationInfo.getId() );
+                if (StringUtils.startsWith( applicationInfo.getId(), value )) {
+                    System.out.println("found candidate " + applicationInfo.getId());
+                    candidates.add( applicationInfo.getId() );//applicationInfo.getTitle(),
                 }
             }
 
