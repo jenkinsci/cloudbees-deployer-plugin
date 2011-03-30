@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011, CloudBees Inc.
+ * Copyright 2010-2011, CloudBees Inc., Olivier Lamy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,11 @@ public class CloudbeesApiHelper
     // configurable ?
     public static String CLOUDBEES_API_URL = "https://api.cloudbees.com/api";
 
-    public static ApplicationListResponse applicationsList(CloudbeesApiRequest cloudbeesApiRequest)
-        throws Exception
-    {
+    public static ApplicationListResponse applicationsList(CloudbeesApiRequest cloudbeesApiRequest) throws Exception {
         return getBeesClient(cloudbeesApiRequest).applicationList();
     }
+
+
 
     /**
      * use the sayHello remote api to simulate a ping (will validate authz)
@@ -47,7 +47,7 @@ public class CloudbeesApiHelper
     }
 
 
-    private static BeesClient getBeesClient(CloudbeesApiRequest cloudbeesApiRequest) {
+    public static BeesClient getBeesClient(CloudbeesApiRequest cloudbeesApiRequest) {
         BeesClient client =
             new BeesClient(cloudbeesApiRequest.url, cloudbeesApiRequest.apiKey, cloudbeesApiRequest.secretKey, "xml", "1.0");
         client.setVerbose( CloudbeesApiHelper.verbose );

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011, CloudBees Inc.
+ * Copyright 2010-2011, CloudBees Inc., Olivier Lamy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,16 @@ import com.cloudbees.api.BeesClientException;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.*;
+import hudson.maven.MavenBuild;
+import hudson.maven.MavenModule;
+import hudson.maven.MavenModuleSetBuild;
+import hudson.maven.reporters.MavenAbstractArtifactRecord;
+import hudson.maven.reporters.MavenArtifact;
+import hudson.maven.reporters.MavenArtifactRecord;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.AutoCompletionCandidates;
+import hudson.model.BuildListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
@@ -32,7 +41,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
@@ -40,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -87,9 +96,29 @@ public class CloudbeesPublisher extends Notifier {
 
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        LOGGER.info("CloudbeesPublisher :: perform ");
-        return super.perform(build, launcher, listener);
+        //TODO i18n
+        listener.getLogger().println("CloudbeesPublisher :: perform " + this.getCloudbeesAccount().name + "::" + this.applicationId);
+
+        CloudbeesAccount cloudbeesAccount = this.getCloudbeesAccount();
+
+
+        CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
+                new CloudbeesApiHelper.CloudbeesApiRequest( CloudbeesApiHelper.CLOUDBEES_API_URL, cloudbeesAccount.apiKey, cloudbeesAccount.secretKey );
+
+        // TODO replace description with jenkins BUILD_ID ?
+        //CloudbeesApiHelper.getBeesClient(apiRequest).applicationDeployWar(this.applicationId, null, "description")
+
+        MavenArtifactFilePathSaver.ArtifactFilePathSaveAction artifactFilePathSaveAction =
+                build.getAction(MavenArtifactFilePathSaver.ArtifactFilePathSaveAction.class);
+
+
+        for (MavenArtifactFilePathSaver.MavenArtifactWithFilePath artifactWithFilePath : artifactFilePathSaveAction.mavenArtifactWithFilePaths ) {
+            listener.getLogger().println("artifactWithFilePath"+artifactWithFilePath.filePath);
+        }
+
+        return true;
     }
+
 
 	@Extension
 	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
