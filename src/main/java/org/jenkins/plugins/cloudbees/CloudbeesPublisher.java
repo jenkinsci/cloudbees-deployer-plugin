@@ -108,14 +108,16 @@ public class CloudbeesPublisher extends Notifier {
         // TODO replace description with jenkins BUILD_ID ?
         //CloudbeesApiHelper.getBeesClient(apiRequest).applicationDeployWar(this.applicationId, null, "description")
 
-        MavenArtifactFilePathSaver.ArtifactFilePathSaveAction artifactFilePathSaveAction =
-                build.getAction(MavenArtifactFilePathSaver.ArtifactFilePathSaveAction.class);
+        List<MavenArtifactFilePathSaver.ArtifactFilePathSaveAction> artifactFilePathSaveActions =
+                build.getActions(MavenArtifactFilePathSaver.ArtifactFilePathSaveAction.class);
 
-        listener.getLogger().println("artifacts " + artifactFilePathSaveAction);
-        for (MavenArtifactFilePathSaver.MavenArtifactWithFilePath artifactWithFilePath : artifactFilePathSaveAction.mavenArtifactWithFilePaths ) {
-            listener.getLogger().println("artifactWithFilePath"+artifactWithFilePath.filePath);
+        for (MavenArtifactFilePathSaver.ArtifactFilePathSaveAction artifactFilePathSaveAction : artifactFilePathSaveActions)
+        {
+            listener.getLogger().println("artifacts " + artifactFilePathSaveAction);
+            for (MavenArtifactFilePathSaver.MavenArtifactWithFilePath artifactWithFilePath : artifactFilePathSaveAction.mavenArtifactWithFilePaths ) {
+                listener.getLogger().println("artifactWithFilePath"+artifactWithFilePath.filePath);
+            }
         }
-
         return true;
     }
 

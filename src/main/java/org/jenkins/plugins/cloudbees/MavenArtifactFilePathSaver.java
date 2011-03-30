@@ -63,7 +63,7 @@ public class MavenArtifactFilePathSaver extends MavenReporter {
             final MavenArtifact mainArtifact = MavenArtifact.create(pom.getArtifact());
             if(mainArtifact!=null) {
                 //TODO take of NPE !!
-                mavenArtifacts.add(new MavenArtifactWithFilePath(pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), pom.getArtifact().getFile().getPath()));
+                mavenArtifacts.add(new MavenArtifactWithFilePath(pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), pom.getArtifact().getFile().getPath(),pom.getArtifact().getType()));
             }
 
             // record attached artifacts
@@ -72,21 +72,22 @@ public class MavenArtifactFilePathSaver extends MavenReporter {
                 MavenArtifact ma = MavenArtifact.create(a);
                 if(ma!=null) {
                 //TODO take of NPE !!
-                mavenArtifacts.add(new MavenArtifactWithFilePath(pom.getGroupId(),pom.getArtifactId(),pom.getVersion(),pom.getArtifact().getFile().getPath()));
+                mavenArtifacts.add(new MavenArtifactWithFilePath(pom.getGroupId(),pom.getArtifactId(),pom.getVersion(),pom.getArtifact().getFile().getPath(),pom.getArtifact().getType()));
                 }
             }
 
             // record the action
             build.execute(new MavenBuildProxy.BuildCallable<Void,IOException>() {
                 public Void call(MavenBuild build) throws IOException, InterruptedException {
-                    System.out.println("record artifacst" + mavenArtifacts);
+
                     ArtifactFilePathSaveAction artifactFilePathSaveAction = build.getAction(ArtifactFilePathSaveAction.class);
                     if (artifactFilePathSaveAction == null) {
                         artifactFilePathSaveAction = new ArtifactFilePathSaveAction(mavenArtifacts);
-                        build.addAction(artifactFilePathSaveAction);
                     } else {
                         artifactFilePathSaveAction.mavenArtifactWithFilePaths.addAll(mavenArtifacts);
                     }
+                    build.addAction(artifactFilePathSaveAction);
+                    System.out.println("record artifacst" + artifactFilePathSaveAction.mavenArtifactWithFilePaths);
                     return null;
                 }
             });
@@ -119,13 +120,14 @@ public class MavenArtifactFilePathSaver extends MavenReporter {
 
     static class MavenArtifactWithFilePath implements Serializable {
 
-        final String groupId,artifactId,version,filePath;
+        final String groupId,artifactId,version,filePath,type;
 
-        MavenArtifactWithFilePath(String groupId, String artifactId, String version, String filePath) {
+        MavenArtifactWithFilePath(String groupId, String artifactId, String version, String filePath,String type) {
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.version = version;
             this.filePath = filePath;
+            this.type = type;
         }
 
         @Override
@@ -139,7 +141,8 @@ public class MavenArtifactFilePathSaver extends MavenReporter {
             return StringUtils.equals(groupId,mavenArtifactWithFilePath.groupId)
                     && StringUtils.equals(artifactId,mavenArtifactWithFilePath.artifactId)
                     && StringUtils.equals(version,mavenArtifactWithFilePath.version)
-                    && StringUtils.equals(filePath,mavenArtifactWithFilePath.filePath);
+                    && StringUtils.equals(filePath,mavenArtifactWithFilePath.filePath)
+                    && StringUtils.equals(type,mavenArtifactWithFilePath.type);
         }
 
         @Override
@@ -148,6 +151,7 @@ public class MavenArtifactFilePathSaver extends MavenReporter {
             hashCode += artifactId == null ? 0 : artifactId.hashCode();
             hashCode += version == null ? 0 : version.hashCode();
             hashCode += filePath == null ? 0 : filePath.hashCode();
+            hashCode += type == null ? 0 : type.hashCode();
             return hashCode;
         }
     }
