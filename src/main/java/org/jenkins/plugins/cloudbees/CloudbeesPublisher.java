@@ -111,7 +111,7 @@ public class CloudbeesPublisher extends Notifier {
         MavenArtifactFilePathSaver.ArtifactFilePathSaveAction artifactFilePathSaveAction =
                 build.getAction(MavenArtifactFilePathSaver.ArtifactFilePathSaveAction.class);
 
-
+        listener.getLogger().println("artifacts " + artifactFilePathSaveAction);
         for (MavenArtifactFilePathSaver.MavenArtifactWithFilePath artifactWithFilePath : artifactFilePathSaveAction.mavenArtifactWithFilePaths ) {
             listener.getLogger().println("artifactWithFilePath"+artifactWithFilePath.filePath);
         }

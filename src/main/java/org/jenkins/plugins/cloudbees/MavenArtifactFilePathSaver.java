@@ -77,7 +77,7 @@ public class MavenArtifactFilePathSaver extends MavenReporter {
             }
 
             // record the action
-            build.executeAsync(new MavenBuildProxy.BuildCallable<Void,IOException>() {
+            build.execute(new MavenBuildProxy.BuildCallable<Void,IOException>() {
                 public Void call(MavenBuild build) throws IOException, InterruptedException {
                     System.out.println("record artifacst" + mavenArtifacts);
                     ArtifactFilePathSaveAction artifactFilePathSaveAction = build.getAction(ArtifactFilePathSaveAction.class);
@@ -149,16 +149,6 @@ public class MavenArtifactFilePathSaver extends MavenReporter {
             hashCode += version == null ? 0 : version.hashCode();
             hashCode += filePath == null ? 0 : filePath.hashCode();
             return hashCode;
-        }
-
-        @Override
-        public String toString() {
-            return "MavenArtifactWithFilePath{" +
-                    "groupId='" + groupId + '\'' +
-                    ", artifactId='" + artifactId + '\'' +
-                    ", version='" + version + '\'' +
-                    ", filePath='" + filePath + '\'' +
-                    '}';
         }
     }
 
