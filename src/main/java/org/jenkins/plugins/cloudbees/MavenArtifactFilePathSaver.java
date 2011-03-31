@@ -16,26 +16,13 @@
 package org.jenkins.plugins.cloudbees;
 
 import hudson.Extension;
-import hudson.FilePath;
-import hudson.Util;
 import hudson.maven.*;
 import hudson.maven.reporters.MavenArtifact;
-import hudson.maven.reporters.MavenArtifactArchiver;
-import hudson.maven.reporters.MavenArtifactRecord;
-import hudson.maven.reporters.Messages;
-import hudson.model.Action;
 import hudson.model.BuildListener;
-import hudson.util.InvocationInterceptor;
-import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
