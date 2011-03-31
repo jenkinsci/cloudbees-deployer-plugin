@@ -18,6 +18,7 @@ package org.jenkins.plugins.cloudbees;
 import com.cloudbees.api.ApplicationInfo;
 import com.cloudbees.api.ApplicationListResponse;
 import com.cloudbees.api.BeesClientException;
+import com.cloudbees.api.UploadProgress;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
@@ -37,6 +38,7 @@ import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.CopyOnWriteList;
 import hudson.util.FormValidation;
+import hudson.util.IOException2;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -95,7 +97,7 @@ public class CloudbeesPublisher extends Notifier {
 
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
         //TODO i18n
         listener.getLogger().println("CloudbeesPublisher :: perform " + this.getCloudbeesAccount().name + "::" + this.applicationId);
 
@@ -105,19 +107,45 @@ public class CloudbeesPublisher extends Notifier {
         CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
                 new CloudbeesApiHelper.CloudbeesApiRequest( CloudbeesApiHelper.CLOUDBEES_API_URL, cloudbeesAccount.apiKey, cloudbeesAccount.secretKey );
 
-        // TODO replace description with jenkins BUILD_ID ?
-        //CloudbeesApiHelper.getBeesClient(apiRequest).applicationDeployWar(this.applicationId, null, "description")
+        List<ArtifactFilePathSaveAction> artifactFilePathSaveActions =  build.getActions(ArtifactFilePathSaveAction.class);
 
-        List<MavenArtifactFilePathSaver.ArtifactFilePathSaveAction> artifactFilePathSaveActions =
-                build.getActions(MavenArtifactFilePathSaver.ArtifactFilePathSaveAction.class);
+        if (artifactFilePathSaveActions.isEmpty()) {
+            listener.getLogger().println(" not artifacts has been saved are you sure your build produced some ? ");
+            return false;
+        }
 
-        for (MavenArtifactFilePathSaver.ArtifactFilePathSaveAction artifactFilePathSaveAction : artifactFilePathSaveActions)
+        String warPath=null;
+
+        for (ArtifactFilePathSaveAction artifactFilePathSaveAction : artifactFilePathSaveActions)
         {
-            listener.getLogger().println("artifacts " + artifactFilePathSaveAction);
-            for (MavenArtifactFilePathSaver.MavenArtifactWithFilePath artifactWithFilePath : artifactFilePathSaveAction.mavenArtifactWithFilePaths ) {
-                listener.getLogger().println("artifactWithFilePath"+artifactWithFilePath.filePath);
+            listener.getLogger().println("artifacts " + artifactFilePathSaveAction.mavenArtifactWithFilePaths);
+            for (MavenArtifactWithFilePath artifactWithFilePath : artifactFilePathSaveAction.mavenArtifactWithFilePaths ) {
+                if (StringUtils.equals("war",artifactWithFilePath.type)) {
+                    listener.getLogger().println("artifactWithFilePath"+artifactWithFilePath.filePath);
+                    warPath = artifactWithFilePath.filePath;
+                }
             }
         }
+
+        if (StringUtils.isBlank(warPath)) {
+            listener.getLogger().println(" not war artifact has been found are you sure your build produced some ? ");
+            return false;
+        }
+
+        // TODO getThe file on master if been has been executed on a slave
+        // TODO replace description with jenkins BUILD_ID ?
+        try {
+            CloudbeesApiHelper.getBeesClient(apiRequest).applicationDeployWar(applicationId, "environnement", "description", warPath,
+            warPath, new UploadProgress(){
+                        public void handleBytesWritten(long deltaCount, long totalWritten, long totalToSend) {
+                            listener.getLogger().println(" deltaCount " + deltaCount + ", totalWritten " + totalWritten + "," + totalToSend);
+                        }
+                    });
+        } catch (Exception e) {
+            listener.getLogger().println("issue during deploying war " + e.getMessage());
+            throw new IOException2(e.getMessage(),e);
+        }
+
         return true;
     }
 

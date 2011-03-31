@@ -17,6 +17,10 @@
 
   <name>Cloudbees Plugin</name>
 
+  <properties>
+    <coreVersion>1.403</coreVersion>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.cloudbees</groupId>
@@ -39,6 +43,13 @@
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>maven-plugin</artifactId>
+      <version>${coreVersion}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-core</artifactId>
+      <version>${coreVersion}</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
