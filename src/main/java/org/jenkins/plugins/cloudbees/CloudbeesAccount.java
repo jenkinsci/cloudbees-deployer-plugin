@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011, CloudBees Inc.
+ * Copyright 2010-2011, CloudBees Inc., Olivier Lamy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@ public class CloudbeesAccount
 
 
     @DataBoundConstructor
-    public CloudbeesAccount(String name, String apiKey, String secretKey) {
-        System.out.println("new CloudbeesAccount");
+    public CloudbeesAccount( String name, String apiKey, String secretKey )
+    {
         this.name = name;
         this.apiKey = apiKey;
         this.secretKey = secretKey;
@@ -41,9 +41,7 @@ public class CloudbeesAccount
     @Override
     public String toString()
     {
-        // TODO for debug so remove print stuff
-        return "CloudbeesAccount{" + "name='" + name + '\'' + ", apiKey='" + apiKey + '\'' + ", secretKey='" + secretKey
-            + '\'' + '}';
+        return "CloudbeesAccount" + "name=" + name;
     }
 
 }

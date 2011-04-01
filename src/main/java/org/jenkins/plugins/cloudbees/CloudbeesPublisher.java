@@ -63,19 +63,25 @@ import java.util.logging.Logger;
 /**
  * @author Olivier Lamy
  */
-public class CloudbeesPublisher extends Notifier {
+public class CloudbeesPublisher
+    extends Notifier
+{
 
     public final String accountName;
 
     public final String applicationId;
 
     @DataBoundConstructor
-    public CloudbeesPublisher(String accountName, String applicationId) throws Exception {
-        if (accountName == null) {
+    public CloudbeesPublisher( String accountName, String applicationId )
+        throws Exception
+    {
+        if ( accountName == null )
+        {
             // revert to first one
-            CloudbeesAccount[] accounts =  DESCRIPTOR.getAccounts();
+            CloudbeesAccount[] accounts = DESCRIPTOR.getAccounts();
 
-            if( accounts.length > 0) {
+            if ( accounts.length > 0 )
+            {
                 accountName = accounts[0].name;
             }
         }
@@ -84,66 +90,81 @@ public class CloudbeesPublisher extends Notifier {
         this.applicationId = applicationId;
     }
 
-    public CloudbeesAccount getCloudbeesAccount() {
-        CloudbeesAccount[] accounts =  DESCRIPTOR.getAccounts();
-        if (accountName == null && accounts.length > 0) {
+    public CloudbeesAccount getCloudbeesAccount()
+    {
+        CloudbeesAccount[] accounts = DESCRIPTOR.getAccounts();
+        if ( accountName == null && accounts.length > 0 )
+        {
             // return default
             return accounts[0];
         }
-		for (CloudbeesAccount account : accounts) {
-			if (account.name.equals(accountName))
-				return account;
-		}
-		return null;
+        for ( CloudbeesAccount account : accounts )
+        {
+            if ( account.name.equals( accountName ) )
+            {
+                return account;
+            }
+        }
+        return null;
     }
 
-    public BuildStepMonitor getRequiredMonitorService() {
+    public BuildStepMonitor getRequiredMonitorService()
+    {
         return BuildStepMonitor.BUILD;
     }
 
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
+    public boolean perform( AbstractBuild<?, ?> build, Launcher launcher, final BuildListener listener )
+        throws InterruptedException, IOException
+    {
         //TODO i18n
-        listener.getLogger().println("CloudbeesPublisher :: perform " + this.getCloudbeesAccount().name + "::" + this.applicationId);
+        listener.getLogger().println(
+            "CloudbeesPublisher :: perform " + this.getCloudbeesAccount().name + "::" + this.applicationId );
 
         CloudbeesAccount cloudbeesAccount = this.getCloudbeesAccount();
 
-
         CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
-                new CloudbeesApiHelper.CloudbeesApiRequest( CloudbeesApiHelper.CLOUDBEES_API_URL, cloudbeesAccount.apiKey, cloudbeesAccount.secretKey );
+            new CloudbeesApiHelper.CloudbeesApiRequest( CloudbeesApiHelper.CLOUDBEES_API_URL, cloudbeesAccount.apiKey,
+                                                        cloudbeesAccount.secretKey );
 
-        List<ArtifactFilePathSaveAction> artifactFilePathSaveActions =  build.getActions(ArtifactFilePathSaveAction.class);
+        List<ArtifactFilePathSaveAction> artifactFilePathSaveActions =
+            build.getActions( ArtifactFilePathSaveAction.class );
 
-        if (artifactFilePathSaveActions.isEmpty()) {
-            listener.getLogger().println(" not artifacts has been saved are you sure your build produced some ? ");
+        if ( artifactFilePathSaveActions.isEmpty() )
+        {
+            listener.getLogger().println( " not artifacts has been saved are you sure your build produced some ? " );
             return false;
         }
 
-        String warPath=null;
+        String warPath = null;
 
-        for (ArtifactFilePathSaveAction artifactFilePathSaveAction : artifactFilePathSaveActions)
+        for ( ArtifactFilePathSaveAction artifactFilePathSaveAction : artifactFilePathSaveActions )
         {
-            listener.getLogger().println("artifacts " + artifactFilePathSaveAction.mavenArtifactWithFilePaths);
-            for (MavenArtifactWithFilePath artifactWithFilePath : artifactFilePathSaveAction.mavenArtifactWithFilePaths ) {
-                if (StringUtils.equals("war",artifactWithFilePath.type)) {
-                    listener.getLogger().println("artifactWithFilePath"+artifactWithFilePath.filePath);
+            listener.getLogger().println( "artifacts " + artifactFilePathSaveAction.mavenArtifactWithFilePaths );
+            for ( MavenArtifactWithFilePath artifactWithFilePath : artifactFilePathSaveAction.mavenArtifactWithFilePaths )
+            {
+                if ( StringUtils.equals( "war", artifactWithFilePath.type ) )
+                {
+                    listener.getLogger().println( "artifactWithFilePath" + artifactWithFilePath.filePath );
                     warPath = artifactWithFilePath.filePath;
                 }
             }
         }
 
-        if (StringUtils.isBlank(warPath)) {
-            listener.getLogger().println(" not war artifact has been found are you sure your build produced some ? ");
+        if ( StringUtils.isBlank( warPath ) )
+        {
+            listener.getLogger().println( " not war artifact has been found are you sure your build produced some ? " );
             return false;
         }
 
         File tmpArchive = File.createTempFile( "jenkins", "temp-cloudbees-deploy" );
 
-        try {
+        try
+        {
 
             // handle remote slave case so copy war locally
-            Node buildNode =  Hudson.getInstance().getNode( build.getBuiltOnStr() );
+            Node buildNode = Hudson.getInstance().getNode( build.getBuiltOnStr() );
             FilePath filePath = new FilePath( tmpArchive );
 
             FilePath remoteWar = build.getWorkspace().child( warPath );
@@ -152,36 +173,59 @@ public class CloudbeesPublisher extends Notifier {
 
             warPath = tmpArchive.getPath();
 
-            listener.getLogger().println(" deploying archive to cloudbees application " + applicationId);
+            listener.getLogger().println( " deploying archive to cloudbees application " + applicationId );
 
             // TODO replace description with jenkins BUILD_ID ?
 
-            CloudbeesApiHelper.getBeesClient(apiRequest).applicationDeployWar(applicationId, "environnement", "description", warPath,
-            warPath, new UploadProgress(){
-                        public void handleBytesWritten(long deltaCount, long totalWritten, long totalToSend) {
-                            listener.getLogger().println(" upload : " + deltaCount/1024 + " ko, status " + totalWritten/1014 + " ko/" + totalToSend/1024 + " ko");
-                        }
-                    });
-        } catch (Exception e) {
-            listener.getLogger().println("issue during deploying war " + e.getMessage());
-            throw new IOException2(e.getMessage(),e);
-        } finally {
+            CloudbeesApiHelper.getBeesClient( apiRequest ).applicationDeployWar( applicationId, "environnement",
+                                                                                 "description", warPath, warPath,
+                                                                                 new ConsoleListenerUploadProgress(
+                                                                                     listener ) );
+        }
+        catch ( Exception e )
+        {
+            listener.getLogger().println( "issue during deploying war " + e.getMessage() );
+            throw new IOException2( e.getMessage(), e );
+        }
+        finally
+        {
             FileUtils.deleteQuietly( tmpArchive );
         }
 
         return true;
     }
 
+    private static class ConsoleListenerUploadProgress
+        implements UploadProgress
+    {
+        private final BuildListener listener;
 
-	@Extension
-	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+        ConsoleListenerUploadProgress( BuildListener buildListener )
+        {
+            this.listener = buildListener;
+        }
 
-    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        public void handleBytesWritten( long deltaCount, long totalWritten, long totalToSend )
+        {
+            listener.getLogger().println(
+                " upload : " + deltaCount / 1024 + " ko, status " + totalWritten / 1014 + " ko/" + totalToSend / 1024
+                    + " ko" );
+        }
+    }
+
+
+    @Extension
+    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+
+    public static final class DescriptorImpl
+        extends BuildStepDescriptor<Publisher>
+    {
 
         private final CopyOnWriteList<CloudbeesAccount> accounts = new CopyOnWriteList<CloudbeesAccount>();
 
-        public DescriptorImpl() {
-            super(CloudbeesPublisher.class);
+        public DescriptorImpl()
+        {
+            super( CloudbeesPublisher.class );
             load();
         }
 
@@ -193,56 +237,68 @@ public class CloudbeesPublisher extends Notifier {
         }
 
         @Override
-		public Publisher newInstance(StaplerRequest req, JSONObject formData) {
-			CloudbeesPublisher cpp = req.bindParameters(
-					CloudbeesPublisher.class, "cloudbeesaccount.");
-			if (cpp.accountName == null) cpp = null;
-			return cpp;
-		}
+        public Publisher newInstance( StaplerRequest req, JSONObject formData )
+        {
+            CloudbeesPublisher cpp = req.bindParameters( CloudbeesPublisher.class, "cloudbeesaccount." );
+            if ( cpp.accountName == null )
+            {
+                cpp = null;
+            }
+            return cpp;
+        }
 
-		public boolean configure(StaplerRequest req, JSONObject formData) {
-            List<CloudbeesAccount> accountList = req.bindParametersToList( CloudbeesAccount.class, "cloudbeesaccount." );
-			accounts.replaceBy( accountList );
-			save();
-			return true;
-		}
+        public boolean configure( StaplerRequest req, JSONObject formData )
+        {
+            List<CloudbeesAccount> accountList =
+                req.bindParametersToList( CloudbeesAccount.class, "cloudbeesaccount." );
+            accounts.replaceBy( accountList );
+            save();
+            return true;
+        }
 
-		/**
-		 *
-		 */
-		public FormValidation doNameCheck(@QueryParameter final String name)
-				throws IOException, ServletException {
-			if (StringUtils.isBlank( name )) {
+        /**
+         *
+         */
+        public FormValidation doNameCheck( @QueryParameter final String name )
+            throws IOException, ServletException
+        {
+            if ( StringUtils.isBlank( name ) )
+            {
                 // TODO i18n
-                return FormValidation.error("name cannot be empty");
+                return FormValidation.error( "name cannot be empty" );
             }
             return FormValidation.ok();
-		}
+        }
 
-		/**
-		 *
-		 */
-		public FormValidation doApiKeyCheck(@QueryParameter final String apiKey)
-				throws IOException, ServletException {
-			if (StringUtils.isBlank( apiKey )) {
+        /**
+         *
+         */
+        public FormValidation doApiKeyCheck( @QueryParameter final String apiKey )
+            throws IOException, ServletException
+        {
+            if ( StringUtils.isBlank( apiKey ) )
+            {
                 // TODO i18n
-                return FormValidation.error("apiKey cannot be empty");
+                return FormValidation.error( "apiKey cannot be empty" );
             }
             return FormValidation.ok();
-		}
+        }
 
-		public FormValidation doSecretKeyCheck(StaplerRequest request)
-				throws IOException, ServletException {
-            String secretKey = Util.fixEmpty(request.getParameter("secretKey"));
-			if (StringUtils.isBlank( secretKey )) {
+        public FormValidation doSecretKeyCheck( StaplerRequest request )
+            throws IOException, ServletException
+        {
+            String secretKey = Util.fixEmpty( request.getParameter( "secretKey" ) );
+            if ( StringUtils.isBlank( secretKey ) )
+            {
                 // TODO i18n
-                return FormValidation.error("secretKey cannot be empty");
+                return FormValidation.error( "secretKey cannot be empty" );
             }
             // check valid account
-            String apiKey = Util.fixEmpty(request.getParameter("apiKey"));
-            if (StringUtils.isBlank( apiKey )) {
+            String apiKey = Util.fixEmpty( request.getParameter( "apiKey" ) );
+            if ( StringUtils.isBlank( apiKey ) )
+            {
                 // TODO i18n
-                return FormValidation.error("apiKey cannot be empty");
+                return FormValidation.error( "apiKey cannot be empty" );
             }
 
             CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
@@ -251,97 +307,117 @@ public class CloudbeesPublisher extends Notifier {
             try
             {
                 CloudbeesApiHelper.ping( apiRequest );
-            } catch ( BeesClientException e ) {
-                if (e.getError() == null)
+            }
+            catch ( BeesClientException e )
+            {
+                if ( e.getError() == null )
                 {
-                    LOGGER.log(Level.SEVERE, "Error during calling cloudbees api", e);
-                    return FormValidation.error("Unknown error check server logs");
-                } else {
-                    return FormValidation.error(e.getError().getMessage());
+                    LOGGER.log( Level.SEVERE, "Error during calling cloudbees api", e );
+                    return FormValidation.error( "Unknown error check server logs" );
+                }
+                else
+                {
+                    return FormValidation.error( e.getError().getMessage() );
                 }
             }
             catch ( Exception e )
             {
-                LOGGER.log(Level.SEVERE, "Error during calling cloudbees api", e);
-                return FormValidation.error("Unknown error check server logs");
+                LOGGER.log( Level.SEVERE, "Error during calling cloudbees api", e );
+                return FormValidation.error( "Unknown error check server logs" );
             }
             return FormValidation.ok();
-		}
+        }
 
-        public void setAccounts(CloudbeesAccount cloudbeesAccount) {
+        public void setAccounts( CloudbeesAccount cloudbeesAccount )
+        {
             accounts.add( cloudbeesAccount );
         }
 
-        public CloudbeesAccount[] getAccounts() {
+        public CloudbeesAccount[] getAccounts()
+        {
             return accounts.toArray( new CloudbeesAccount[0] );
         }
 
         @Override
-        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-          // check if type of FreeStyleProject.class or MavenModuleSet.class
-          return true;
+        public boolean isApplicable( Class<? extends AbstractProject> jobType )
+        {
+            // check if type of FreeStyleProject.class or MavenModuleSet.class
+            return true;
         }
 
-		public FormValidation doApplicationIdCheck(@QueryParameter final String applicationId, @QueryParameter final String cloudbeesAccountName)
-				throws IOException, ServletException {
-            try {
+        public FormValidation doApplicationIdCheck( @QueryParameter final String applicationId,
+                                                    @QueryParameter final String cloudbeesAccountName )
+            throws IOException, ServletException
+        {
+            try
+            {
 
-                if (StringUtils.isBlank( applicationId )) {
+                if ( StringUtils.isBlank( applicationId ) )
+                {
                     // TODO i18n
-                    return FormValidation.error("applicationId cannot be empty");
+                    return FormValidation.error( "applicationId cannot be empty" );
                 }
 
                 CloudbeesAccount cloudbeesAccount = getCloudbeesAccount( cloudbeesAccountName );
-                ApplicationListResponse applicationListResponse =
-                        CloudbeesApiHelper.applicationsList(new CloudbeesApiHelper.CloudbeesApiRequest(CloudbeesApiHelper.CLOUDBEES_API_URL,cloudbeesAccount ));
+                ApplicationListResponse applicationListResponse = CloudbeesApiHelper.applicationsList(
+                    new CloudbeesApiHelper.CloudbeesApiRequest( CloudbeesApiHelper.CLOUDBEES_API_URL,
+                                                                cloudbeesAccount ) );
                 List<ApplicationInfo> applicationInfos = applicationListResponse.getApplications();
 
-                List<String> applicationIds = new ArrayList<String>(applicationInfos.size());
+                List<String> applicationIds = new ArrayList<String>( applicationInfos.size() );
 
                 AutoCompletionCandidates candidates = new AutoCompletionCandidates();
-                for (ApplicationInfo applicationInfo : applicationInfos) {
-                    if (StringUtils.equals( applicationInfo.getId(), applicationId )) {
+                for ( ApplicationInfo applicationInfo : applicationInfos )
+                {
+                    if ( StringUtils.equals( applicationInfo.getId(), applicationId ) )
+                    {
                         return FormValidation.ok();
                     }
                     applicationIds.add( applicationInfo.getId() );
                 }
-                StringBuilder sb = new StringBuilder(  );
+                StringBuilder sb = new StringBuilder();
 
-                for (String appId : applicationIds) {
+                for ( String appId : applicationIds )
+                {
                     sb.append( appId + " " );
                 }
 
                 return FormValidation.error( "possible applicationIds are " + sb.toString() );
-            } catch ( Exception e ) {
-              return FormValidation.error( e, "error during check applicationId " + e.getMessage() );
             }
-		}
+            catch ( Exception e )
+            {
+                return FormValidation.error( e, "error during check applicationId " + e.getMessage() );
+            }
+        }
 
         // TODO fix those try to find a way to pass cloudbeesAccountName in autoCompleteUrl
-        public AutoCompletionCandidates doAutoCompleteApplications(StaplerRequest staplerRequest )
+        public AutoCompletionCandidates doAutoCompleteApplications( StaplerRequest staplerRequest )
             throws Exception
         {
 
             Enumeration enumeration = staplerRequest.getParameterNames();
             while ( enumeration.hasMoreElements() )
             {
-                System.out.println("name " + (String) enumeration.nextElement());
+                System.out.println( "name " + (String) enumeration.nextElement() );
             }
 
             String value = staplerRequest.getParameter( "value" );
             String cloudbeesAccountName = staplerRequest.getParameter( "cloudbeesAccountName" );
-            System.out.println( "in doAutoCompleteApplications value:"+value+",cloudbeesAccountName"+cloudbeesAccountName);
+            System.out.println(
+                "in doAutoCompleteApplications value:" + value + ",cloudbeesAccountName" + cloudbeesAccountName );
             CloudbeesAccount cloudbeesAccount = getCloudbeesAccount( cloudbeesAccountName );
 
-            ApplicationListResponse applicationListResponse =
-                    CloudbeesApiHelper.applicationsList(new CloudbeesApiHelper.CloudbeesApiRequest(CloudbeesApiHelper.CLOUDBEES_API_URL,cloudbeesAccount ));
+            ApplicationListResponse applicationListResponse = CloudbeesApiHelper.applicationsList(
+                new CloudbeesApiHelper.CloudbeesApiRequest( CloudbeesApiHelper.CLOUDBEES_API_URL, cloudbeesAccount ) );
             List<ApplicationInfo> applicationInfos = applicationListResponse.getApplications();
             System.out.println( "found " + applicationInfos.size() + " applications" );
 
             AutoCompletionCandidates candidates = new AutoCompletionCandidates();
-            for (ApplicationInfo applicationInfo : applicationInfos) {
-                if (StringUtils.startsWith( applicationInfo.getId(), value )) {
-                    System.out.println("found candidate " + applicationInfo.getId());
+            for ( ApplicationInfo applicationInfo : applicationInfos )
+            {
+                if ( StringUtils.startsWith( applicationInfo.getId(), value ) )
+                {
+                    System.out.println( "found candidate " + applicationInfo.getId() );
                     candidates.add( applicationInfo.getId() );//applicationInfo.getTitle(),
                 }
             }
@@ -349,16 +425,20 @@ public class CloudbeesPublisher extends Notifier {
             return candidates;
         }
 
-        public static CloudbeesAccount getCloudbeesAccount(String cloudbeesAccountName)
+        public static CloudbeesAccount getCloudbeesAccount( String cloudbeesAccountName )
         {
-            CloudbeesAccount[] accounts =  DESCRIPTOR.getAccounts();
-            if (cloudbeesAccountName == null && accounts.length > 0) {
+            CloudbeesAccount[] accounts = DESCRIPTOR.getAccounts();
+            if ( cloudbeesAccountName == null && accounts.length > 0 )
+            {
                 // return default
                 return accounts[0];
             }
-            for (CloudbeesAccount account : accounts) {
-                if (account.name.equals(cloudbeesAccountName))
+            for ( CloudbeesAccount account : accounts )
+            {
+                if ( account.name.equals( cloudbeesAccountName ) )
+                {
                     return account;
+                }
             }
             return null;
         }
@@ -366,5 +446,5 @@ public class CloudbeesPublisher extends Notifier {
     }
 
 
-    private static final Logger LOGGER = Logger .getLogger( CloudbeesPublisher.class.getName() );
+    private static final Logger LOGGER = Logger.getLogger( CloudbeesPublisher.class.getName() );
 }
