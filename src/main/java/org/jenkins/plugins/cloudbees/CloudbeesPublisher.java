@@ -152,12 +152,14 @@ public class CloudbeesPublisher extends Notifier {
 
             warPath = tmpArchive.getPath();
 
+            listener.getLogger().println(" deploying archive to cloudbees application " + applicationId);
+
             // TODO replace description with jenkins BUILD_ID ?
 
             CloudbeesApiHelper.getBeesClient(apiRequest).applicationDeployWar(applicationId, "environnement", "description", warPath,
             warPath, new UploadProgress(){
                         public void handleBytesWritten(long deltaCount, long totalWritten, long totalToSend) {
-                            listener.getLogger().println(" deltaCount " + deltaCount + ", totalWritten " + totalWritten + "," + totalToSend);
+                            listener.getLogger().println(" upload : " + deltaCount/1024 + " ko, status " + totalWritten/1014 + " ko/" + totalToSend/1024 + " ko");
                         }
                     });
         } catch (Exception e) {
