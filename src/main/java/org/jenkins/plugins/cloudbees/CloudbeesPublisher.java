@@ -175,10 +175,9 @@ public class CloudbeesPublisher
 
             listener.getLogger().println( " deploying archive to cloudbees application " + applicationId );
 
-            // TODO replace description with jenkins BUILD_ID ?
-
+            String description = "Jenkins build " + build.getId();
             CloudbeesApiHelper.getBeesClient( apiRequest ).applicationDeployWar( applicationId, "environnement",
-                                                                                 "description", warPath, warPath,
+                                                                                 description, warPath, warPath,
                                                                                  new ConsoleListenerUploadProgress(
                                                                                      listener ) );
         }
