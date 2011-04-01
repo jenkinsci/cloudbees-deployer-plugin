@@ -74,9 +74,6 @@ public class MavenArtifactFilePathSaver extends MavenReporter {
                         artifactFilePathSaveAction.mavenArtifactWithFilePaths.addAll(mavenArtifacts);
                     }
                     build.addAction(artifactFilePathSaveAction);
-
-                    System.out.println("record artifacst" + artifactFilePathSaveAction.mavenArtifactWithFilePaths);
-                    //build.save();
                     return null;
                 }
             });
