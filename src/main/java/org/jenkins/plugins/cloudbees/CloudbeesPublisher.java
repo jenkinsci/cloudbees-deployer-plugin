@@ -20,6 +20,7 @@ import com.cloudbees.api.ApplicationListResponse;
 import com.cloudbees.api.BeesClientException;
 import com.cloudbees.api.UploadProgress;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.MavenBuild;
@@ -32,6 +33,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.BuildListener;
+import hudson.model.Hudson;
+import hudson.model.Node;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
@@ -40,12 +43,15 @@ import hudson.util.CopyOnWriteList;
 import hudson.util.FormValidation;
 import hudson.util.IOException2;
 import net.sf.json.JSONObject;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -132,9 +138,22 @@ public class CloudbeesPublisher extends Notifier {
             return false;
         }
 
-        // TODO getThe file on master if been has been executed on a slave
-        // TODO replace description with jenkins BUILD_ID ?
+        File tmpArchive = File.createTempFile( "jenkins", "temp-cloudbees-deploy" );
+
         try {
+
+            // handle remote slave case so copy war locally
+            Node buildNode =  Hudson.getInstance().getNode( build.getBuiltOnStr() );
+            FilePath filePath = new FilePath( tmpArchive );
+
+            FilePath remoteWar = build.getWorkspace().child( warPath );
+
+            remoteWar.copyTo( filePath );
+
+            warPath = tmpArchive.getPath();
+
+            // TODO replace description with jenkins BUILD_ID ?
+
             CloudbeesApiHelper.getBeesClient(apiRequest).applicationDeployWar(applicationId, "environnement", "description", warPath,
             warPath, new UploadProgress(){
                         public void handleBytesWritten(long deltaCount, long totalWritten, long totalToSend) {
@@ -144,6 +163,8 @@ public class CloudbeesPublisher extends Notifier {
         } catch (Exception e) {
             listener.getLogger().println("issue during deploying war " + e.getMessage());
             throw new IOException2(e.getMessage(),e);
+        } finally {
+            FileUtils.deleteQuietly( tmpArchive );
         }
 
         return true;
