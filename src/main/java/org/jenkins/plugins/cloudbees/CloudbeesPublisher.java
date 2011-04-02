@@ -46,6 +46,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jenkins.plugins.cloudbees.util.FileFinder;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -71,8 +72,10 @@ public class CloudbeesPublisher
 
     public final String applicationId;
 
+    public final String filePattern;
+
     @DataBoundConstructor
-    public CloudbeesPublisher( String accountName, String applicationId )
+    public CloudbeesPublisher( String accountName, String applicationId, String filePattern )
         throws Exception
     {
         if ( accountName == null )
@@ -88,6 +91,8 @@ public class CloudbeesPublisher
         this.accountName = accountName;
 
         this.applicationId = applicationId;
+
+        this.filePattern = filePattern;
     }
 
     public CloudbeesAccount getCloudbeesAccount()
@@ -131,7 +136,7 @@ public class CloudbeesPublisher
         List<ArtifactFilePathSaveAction> artifactFilePathSaveActions =
             build.getActions( ArtifactFilePathSaveAction.class );
 
-        if ( artifactFilePathSaveActions.isEmpty() )
+        if ( artifactFilePathSaveActions.isEmpty() && StringUtils.isBlank(filePattern))
         {
             listener.getLogger().println( " not artifacts has been saved are you sure your build produced some ? " );
             return false;
@@ -152,11 +157,24 @@ public class CloudbeesPublisher
             }
         }
 
-        if ( StringUtils.isBlank( warPath ) )
+        if ( StringUtils.isBlank( warPath ) && StringUtils.isBlank(filePattern) )
         {
             listener.getLogger().println( " not war artifact has been found are you sure your build produced some ? " );
             return false;
         }
+        if ( StringUtils.isBlank( warPath ) && !StringUtils.isBlank(filePattern) ) {
+            //search file in the workspace with the pattern
+            FileFinder fileFinder = new FileFinder(filePattern);
+            List<String> fileNames = build.getWorkspace().act(fileFinder);
+            listener.getLogger().println("found remote files : " + fileNames);
+            if (fileNames.size()>1) {
+                listener.getLogger().println("your pattern must return only one file to deploy");
+                return false;
+            }
+            // so we use only the first found
+            warPath = fileNames.get(0);
+        }
+
 
         File tmpArchive = File.createTempFile( "jenkins", "temp-cloudbees-deploy" );
 

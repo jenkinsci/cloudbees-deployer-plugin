@@ -13,6 +13,9 @@
         TODO find a way to accountName too to the autoCompleteUrl
         autoCompleteField="applications" />
         -->
+        <f:textbox title="${%Filename Pattern}" name="cloudbeesaccount.filePattern" value="${instance.filePattern}" />
     </f:entry>
+
+
   </j:if>
 </j:jelly>
