@@ -7,13 +7,18 @@
           <f:option selected="${s.name==instance.accountName}">${s.name}</f:option>
         </j:forEach>
       </select>
+    </f:entry>
+    <f:entry title="${%Application Id}" help="/plugin/cloudbees-deployer-plugin/help-applicationId.html">
       <f:textbox name="cloudbeesaccount.applicationId" value="${instance.applicationId}"
-          checkUrl="'${rootURL}/publisher/CloudbeesPublisher/applicationIdCheck?applicationId='+escape(this.value)+'&amp;cloudbeesAccountName='+escape(Form.findMatchingInput(this,'cloudbeesaccount.accountName').value)" />
+          checkUrl="'${rootURL}/publisher/CloudbeesPublisher/applicationIdCheck?applicationId='+escape(this.value)+'&amp;cloudbeesAccountName='+escape(Form.findMatchingInput(this,'cloudbeesaccount.accountName').value)"
+          />
         <!--
         TODO find a way to accountName too to the autoCompleteUrl
         autoCompleteField="applications" />
         -->
-        <f:textbox title="${%Filename Pattern}" name="cloudbeesaccount.filePattern" value="${instance.filePattern}" />
+    </f:entry>
+    <f:entry title="${%Filename Pattern}" help="/plugin/cloudbees-deployer-plugin/help-file-pattern.html">
+        <f:textbox name="cloudbeesaccount.filePattern" value="${instance.filePattern}" />
     </f:entry>
 
 

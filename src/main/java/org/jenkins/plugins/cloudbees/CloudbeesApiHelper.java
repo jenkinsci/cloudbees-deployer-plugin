@@ -26,9 +26,6 @@ public class CloudbeesApiHelper {
     // to display api call in System.out
     public static boolean verbose = Boolean.getBoolean("CloudbeesApiHelper.verbose");
 
-    // configurable ?
-    public static String CLOUDBEES_API_URL = "https://api.cloudbees.com/api";
-
     public static ApplicationListResponse applicationsList(CloudbeesApiRequest cloudbeesApiRequest) throws Exception {
         return getBeesClient(cloudbeesApiRequest).applicationList();
     }

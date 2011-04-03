@@ -118,7 +118,7 @@ public class CloudbeesPublisher
         CloudbeesAccount cloudbeesAccount = this.getCloudbeesAccount();
 
         CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
-                new CloudbeesApiHelper.CloudbeesApiRequest(CloudbeesApiHelper.CLOUDBEES_API_URL, cloudbeesAccount.apiKey,
+                new CloudbeesApiHelper.CloudbeesApiRequest(DescriptorImpl.CLOUDBEES_API_URL, cloudbeesAccount.apiKey,
                         cloudbeesAccount.secretKey);
 
         List<ArtifactFilePathSaveAction> artifactFilePathSaveActions =
@@ -214,6 +214,9 @@ public class CloudbeesPublisher
 
         private final CopyOnWriteList<CloudbeesAccount> accounts = new CopyOnWriteList<CloudbeesAccount>();
 
+        // configurable ?
+        public static String CLOUDBEES_API_URL = "https://api.cloudbees.com/api";
+
         public DescriptorImpl() {
             super(CloudbeesPublisher.class);
             load();
@@ -276,7 +279,7 @@ public class CloudbeesPublisher
             }
 
             CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
-                    new CloudbeesApiHelper.CloudbeesApiRequest(CloudbeesApiHelper.CLOUDBEES_API_URL, apiKey, secretKey);
+                    new CloudbeesApiHelper.CloudbeesApiRequest(CLOUDBEES_API_URL, apiKey, secretKey);
 
             try {
                 CloudbeesApiHelper.ping(apiRequest);
@@ -319,7 +322,7 @@ public class CloudbeesPublisher
 
                 CloudbeesAccount cloudbeesAccount = getCloudbeesAccount(cloudbeesAccountName);
                 ApplicationListResponse applicationListResponse = CloudbeesApiHelper.applicationsList(
-                        new CloudbeesApiHelper.CloudbeesApiRequest(CloudbeesApiHelper.CLOUDBEES_API_URL,
+                        new CloudbeesApiHelper.CloudbeesApiRequest(CLOUDBEES_API_URL,
                                 cloudbeesAccount));
                 List<ApplicationInfo> applicationInfos = applicationListResponse.getApplications();
 
@@ -360,7 +363,7 @@ public class CloudbeesPublisher
             CloudbeesAccount cloudbeesAccount = getCloudbeesAccount(cloudbeesAccountName);
 
             ApplicationListResponse applicationListResponse = CloudbeesApiHelper.applicationsList(
-                    new CloudbeesApiHelper.CloudbeesApiRequest(CloudbeesApiHelper.CLOUDBEES_API_URL, cloudbeesAccount));
+                    new CloudbeesApiHelper.CloudbeesApiRequest(CLOUDBEES_API_URL, cloudbeesAccount));
             List<ApplicationInfo> applicationInfos = applicationListResponse.getApplications();
             System.out.println("found " + applicationInfos.size() + " applications");
 
