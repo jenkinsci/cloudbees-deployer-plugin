@@ -3,15 +3,15 @@
     <f:entry title="${%Cloudbees accounts}" description="">
       <f:repeatable name="cloudbeesaccount" var="account" items="${descriptor.accounts}">
         <table width="100%">
-          <f:entry title="Name" help="">
+          <f:entry title="${%Name}">
             <f:textbox name="cloudbeesaccount.name" value="${account.name}"
                 checkUrl="'${rootURL}/publisher/CloudbeesPublisher/nameCheck?name='+escape(this.value)" />
           </f:entry>
-          <f:entry title="apiKey" help="">
+          <f:entry title="${%API Key}" help="/plugin/cloudbees-deployer-plugin/help-keys.html">
             <f:textbox name="cloudbeesaccount.apiKey" value="${account.apiKey}"
                 checkUrl="'${rootURL}/publisher/CloudbeesPublisher/apiKeyCheck?apiKey='+escape(this.value)" />
           </f:entry>
-          <f:entry title="secretKey" help="">
+          <f:entry title="${%Secret Key}" help="/plugin/cloudbees-deployer-plugin/help-keys.html">
             <f:textbox name="cloudbeesaccount.secretKey" value="${account.secretKey}"
                 checkUrl="'${rootURL}/publisher/CloudbeesPublisher/secretKeyCheck?secretKey='+escape(this.value)+'&amp;apiKey='+escape(Form.findMatchingInput(this,'cloudbeesaccount.apiKey').value)" />
           </f:entry>
