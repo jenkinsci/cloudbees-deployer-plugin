@@ -33,49 +33,40 @@ import java.util.Set;
  * @author Olivier Lamy
  */
 public class ArtifactFilePathSaveAction
-    implements AggregatableAction, MavenAggregatedReport
-{
+        implements AggregatableAction, MavenAggregatedReport {
 
     final Set<MavenArtifactWithFilePath> mavenArtifactWithFilePaths;
 
-    ArtifactFilePathSaveAction( Set<MavenArtifactWithFilePath> mavenArtifactWithFilePaths )
-    {
+    ArtifactFilePathSaveAction(Set<MavenArtifactWithFilePath> mavenArtifactWithFilePaths) {
         this.mavenArtifactWithFilePaths = mavenArtifactWithFilePaths;
     }
 
-    public void update( Map<MavenModule, List<MavenBuild>> moduleBuilds, MavenBuild newBuild )
-    {
-        System.out.println( "update" );
+    public void update(Map<MavenModule, List<MavenBuild>> moduleBuilds, MavenBuild newBuild) {
+        System.out.println("update");
     }
 
-    public Class<? extends AggregatableAction> getIndividualActionType()
-    {
+    public Class<? extends AggregatableAction> getIndividualActionType() {
         return null;
     }
 
-    public Action getProjectAction( MavenModuleSet moduleSet )
-    {
+    public Action getProjectAction(MavenModuleSet moduleSet) {
         return null;
     }
 
-    public MavenAggregatedReport createAggregatedAction( MavenModuleSetBuild build,
-                                                         Map<MavenModule, List<MavenBuild>> moduleBuilds )
-    {
+    public MavenAggregatedReport createAggregatedAction(MavenModuleSetBuild build,
+                                                        Map<MavenModule, List<MavenBuild>> moduleBuilds) {
         return this;
     }
 
-    public String getIconFileName()
-    {
+    public String getIconFileName() {
         return null;
     }
 
-    public String getDisplayName()
-    {
+    public String getDisplayName() {
         return null;
     }
 
-    public String getUrlName()
-    {
+    public String getUrlName() {
         return null;
     }
 

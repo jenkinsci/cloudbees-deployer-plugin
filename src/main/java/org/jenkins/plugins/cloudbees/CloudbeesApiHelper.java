@@ -21,11 +21,10 @@ import com.cloudbees.api.BeesClient;
 /**
  * @author Olivier Lamy
  */
-public class CloudbeesApiHelper
-{
+public class CloudbeesApiHelper {
 
     // to display api call in System.out
-    public static boolean verbose = Boolean.getBoolean( "CloudbeesApiHelper.verbose" );
+    public static boolean verbose = Boolean.getBoolean("CloudbeesApiHelper.verbose");
 
     // configurable ?
     public static String CLOUDBEES_API_URL = "https://api.cloudbees.com/api";
@@ -35,41 +34,41 @@ public class CloudbeesApiHelper
     }
 
 
-
     /**
      * use the sayHello remote api to simulate a ping (will validate authz)
+     *
      * @param cloudbeesApiRequest
      * @throws Exception
      */
     public static void ping(CloudbeesApiRequest cloudbeesApiRequest)
-        throws Exception {
-       getBeesClient(cloudbeesApiRequest).sayHello( "hey" );
+            throws Exception {
+        getBeesClient(cloudbeesApiRequest).sayHello("hey");
     }
 
 
     public static BeesClient getBeesClient(CloudbeesApiRequest cloudbeesApiRequest) {
         BeesClient client =
-            new BeesClient(cloudbeesApiRequest.url, cloudbeesApiRequest.apiKey, cloudbeesApiRequest.secretKey, "xml", "1.0");
-        client.setVerbose( CloudbeesApiHelper.verbose );
+                new BeesClient(cloudbeesApiRequest.url, cloudbeesApiRequest.apiKey, cloudbeesApiRequest.secretKey, "xml", "1.0");
+        client.setVerbose(CloudbeesApiHelper.verbose);
         return client;
     }
 
-    protected static class CloudbeesApiRequest{
+    protected static class CloudbeesApiRequest {
         private final String url;
         private final String apiKey;
         private final String secretKey;
 
-        protected CloudbeesApiRequest(String url, String apiKey, String secretKey ) {
+        protected CloudbeesApiRequest(String url, String apiKey, String secretKey) {
             this.url = url;
             this.apiKey = apiKey;
             this.secretKey = secretKey;
         }
 
-        protected CloudbeesApiRequest(String url, CloudbeesAccount cloudbeesAccount ) {
+        protected CloudbeesApiRequest(String url, CloudbeesAccount cloudbeesAccount) {
             this.url = url;
             this.apiKey = cloudbeesAccount.apiKey;
             this.secretKey = cloudbeesAccount.secretKey;
         }
-}
+    }
 
 }

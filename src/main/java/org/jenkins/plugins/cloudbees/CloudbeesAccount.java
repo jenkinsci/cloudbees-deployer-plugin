@@ -21,8 +21,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author <a href="mailto:Olivier.LAMY@accor.com">Olivier Lamy</a>
  * @version $
  */
-public class CloudbeesAccount
-{
+public class CloudbeesAccount {
     public final String name;
 
     public final String apiKey;
@@ -31,16 +30,14 @@ public class CloudbeesAccount
 
 
     @DataBoundConstructor
-    public CloudbeesAccount( String name, String apiKey, String secretKey )
-    {
+    public CloudbeesAccount(String name, String apiKey, String secretKey) {
         this.name = name;
         this.apiKey = apiKey;
         this.secretKey = secretKey;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "CloudbeesAccount" + "name=" + name;
     }
 

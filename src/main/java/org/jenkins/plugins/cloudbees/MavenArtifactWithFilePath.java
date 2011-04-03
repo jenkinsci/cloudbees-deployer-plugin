@@ -23,13 +23,11 @@ import java.io.Serializable;
  * @author Olivier Lamy
  */
 public class MavenArtifactWithFilePath
-    implements Serializable
-{
+        implements Serializable {
 
     final String groupId, artifactId, version, filePath, type;
 
-    MavenArtifactWithFilePath( String groupId, String artifactId, String version, String filePath, String type )
-    {
+    MavenArtifactWithFilePath(String groupId, String artifactId, String version, String filePath, String type) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
@@ -38,33 +36,28 @@ public class MavenArtifactWithFilePath
     }
 
     @Override
-    public boolean equals( Object obj )
-    {
-        if ( obj == this )
-        {
+    public boolean equals(Object obj) {
+        if (obj == this) {
             return true;
         }
-        if ( obj == null )
-        {
+        if (obj == null) {
             return false;
         }
-        if ( !( obj instanceof MavenArtifactWithFilePath ) )
-        {
+        if (!(obj instanceof MavenArtifactWithFilePath)) {
             return false;
         }
 
         MavenArtifactWithFilePath mavenArtifactWithFilePath = (MavenArtifactWithFilePath) obj;
 
-        return StringUtils.equals( groupId, mavenArtifactWithFilePath.groupId )
-            && StringUtils.equals( artifactId, mavenArtifactWithFilePath.artifactId )
-            && StringUtils.equals( version, mavenArtifactWithFilePath.version )
-            && StringUtils.equals( filePath, mavenArtifactWithFilePath.filePath ) && StringUtils.equals( type,
-                                                                                                         mavenArtifactWithFilePath.type );
+        return StringUtils.equals(groupId, mavenArtifactWithFilePath.groupId)
+                && StringUtils.equals(artifactId, mavenArtifactWithFilePath.artifactId)
+                && StringUtils.equals(version, mavenArtifactWithFilePath.version)
+                && StringUtils.equals(filePath, mavenArtifactWithFilePath.filePath) && StringUtils.equals(type,
+                mavenArtifactWithFilePath.type);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int hashCode = 37 + groupId == null ? 0 : groupId.hashCode();
         hashCode += artifactId == null ? 0 : artifactId.hashCode();
         hashCode += version == null ? 0 : version.hashCode();
