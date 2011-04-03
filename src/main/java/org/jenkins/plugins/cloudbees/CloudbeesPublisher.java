@@ -221,8 +221,7 @@ public class CloudbeesPublisher
 
         @Override
         public String getDisplayName() {
-            // TODO i18n
-            return "Cloudbess Deployment";
+            return Messages.CloudbeesPublisher_displayName();
         }
 
         @Override
@@ -248,8 +247,7 @@ public class CloudbeesPublisher
         public FormValidation doNameCheck(@QueryParameter final String name)
                 throws IOException, ServletException {
             if (StringUtils.isBlank(name)) {
-                // TODO i18n
-                return FormValidation.error("name cannot be empty");
+                return FormValidation.error( Messages._CloudbeesPublisher_nameNotEmpty().toString());
             }
             return FormValidation.ok();
         }
@@ -260,8 +258,7 @@ public class CloudbeesPublisher
         public FormValidation doApiKeyCheck(@QueryParameter final String apiKey)
                 throws IOException, ServletException {
             if (StringUtils.isBlank(apiKey)) {
-                // TODO i18n
-                return FormValidation.error("apiKey cannot be empty");
+                return FormValidation.error(Messages._CloudbeesPublisher_apiKeyNotEmpty().toString());
             }
             return FormValidation.ok();
         }
@@ -270,14 +267,12 @@ public class CloudbeesPublisher
                 throws IOException, ServletException {
             String secretKey = Util.fixEmpty(request.getParameter("secretKey"));
             if (StringUtils.isBlank(secretKey)) {
-                // TODO i18n
-                return FormValidation.error("secretKey cannot be empty");
+                return FormValidation.error(Messages._CloudbeesPublisher_secretKeyNotEmpty().toString());
             }
             // check valid account
             String apiKey = Util.fixEmpty(request.getParameter("apiKey"));
             if (StringUtils.isBlank(apiKey)) {
-                // TODO i18n
-                return FormValidation.error("apiKey cannot be empty");
+                return FormValidation.error(Messages._CloudbeesPublisher_apiKeyNotEmpty().toString());
             }
 
             CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
@@ -319,8 +314,7 @@ public class CloudbeesPublisher
             try {
 
                 if (StringUtils.isBlank(applicationId)) {
-                    // TODO i18n
-                    return FormValidation.error("applicationId cannot be empty");
+                    return FormValidation.error(Messages._CloudbeesPublisher_applicationIdNotEmpty().toString());
                 }
 
                 CloudbeesAccount cloudbeesAccount = getCloudbeesAccount(cloudbeesAccountName);
