@@ -123,9 +123,7 @@ public class CloudbeesPublisher
     public boolean perform( AbstractBuild<?, ?> build, Launcher launcher, final BuildListener listener )
         throws InterruptedException, IOException
     {
-        //TODO i18n
-        listener.getLogger().println(
-            "CloudbeesPublisher :: perform " + this.getCloudbeesAccount().name + "::" + this.applicationId );
+        listener.getLogger().println(Messages._CloudbeesPublisher_perform(this.getCloudbeesAccount().name, this.applicationId));
 
         CloudbeesAccount cloudbeesAccount = this.getCloudbeesAccount();
 
@@ -138,7 +136,7 @@ public class CloudbeesPublisher
 
         if ( artifactFilePathSaveActions.isEmpty() && StringUtils.isBlank(filePattern))
         {
-            listener.getLogger().println( " not artifacts has been saved are you sure your build produced some ? " );
+            listener.getLogger().println( Messages._CloudbeesPublisher_noArtifacts() );
             return false;
         }
 
@@ -159,7 +157,7 @@ public class CloudbeesPublisher
 
         if ( StringUtils.isBlank( warPath ) && StringUtils.isBlank(filePattern) )
         {
-            listener.getLogger().println( " not war artifact has been found are you sure your build produced some ? " );
+            listener.getLogger().println( Messages._CloudbeesPublisher_noWarArtifacts() );
             return false;
         }
         if ( StringUtils.isBlank( warPath ) && !StringUtils.isBlank(filePattern) ) {
