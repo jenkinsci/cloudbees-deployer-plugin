@@ -12,7 +12,7 @@
                 checkUrl="'${rootURL}/publisher/CloudbeesPublisher/apiKeyCheck?apiKey='+escape(this.value)" />
           </f:entry>
           <f:entry title="${%Secret Key}" help="/plugin/cloudbees-deployer-plugin/help-keys.html">
-            <f:textbox name="cloudbeesaccount.secretKey" value="${account.secretKey}"
+            <f:password name="cloudbeesaccount.secretKey" value="${account.secretKey}"
                 checkUrl="'${rootURL}/publisher/CloudbeesPublisher/secretKeyCheck?secretKey='+escape(this.value)+'&amp;apiKey='+escape(Form.findMatchingInput(this,'cloudbeesaccount.apiKey').value)" />
           </f:entry>
           <f:entry title="">
