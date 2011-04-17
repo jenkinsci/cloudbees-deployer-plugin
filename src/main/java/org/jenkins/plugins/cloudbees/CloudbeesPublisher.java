@@ -64,8 +64,7 @@ import java.util.logging.Logger;
 /**
  * @author Olivier Lamy
  */
-public class CloudbeesPublisher
-        extends Notifier {
+public class CloudbeesPublisher extends Notifier {
 
     public final String accountName;
 

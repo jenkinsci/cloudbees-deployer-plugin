@@ -60,6 +60,13 @@
       <version>1.382</version>
       <scope>compile</scope>
     </dependency>
+
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.4</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <repositories>
