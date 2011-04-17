@@ -39,7 +39,7 @@ public class CloudbeesDeployWarTest
     extends AbstractCloudbeesDeployerPluginTest
 {
 
-    public void testWithMavenProject()
+    public void testWithMaven2Project()
         throws Exception
     {
         MavenModuleSet m = createMavenProject();
