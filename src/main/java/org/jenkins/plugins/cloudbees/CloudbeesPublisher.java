@@ -214,6 +214,7 @@ public class CloudbeesPublisher extends Notifier {
         private final CopyOnWriteList<CloudbeesAccount> accounts = new CopyOnWriteList<CloudbeesAccount>();
 
         // configurable ?
+        // so here last with a public static field it's possible to change tru a groovy script
         public static String CLOUDBEES_API_URL = "https://api.cloudbees.com/api";
 
         public DescriptorImpl() {
