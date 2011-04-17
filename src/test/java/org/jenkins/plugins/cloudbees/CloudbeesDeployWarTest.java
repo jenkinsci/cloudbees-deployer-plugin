@@ -50,6 +50,13 @@ public class CloudbeesDeployWarTest
         m.setScm( new ExtractResourceSCM( getClass().getResource( "test-project.zip" ) ) );
         m.getPublishers().add( new CloudbeesPublisher( "olamy", "foo/beer", null ) );
         MavenModuleSetBuild mmsb = buildAndAssertSuccess( m );
+        assertOnFileItems();
+    }
+
+    public void assertOnFileItems()
+        throws IOException
+    {
+
         for ( FileItem fileItem : cloudbeesServer.cloudbessServlet.items )
         {
 

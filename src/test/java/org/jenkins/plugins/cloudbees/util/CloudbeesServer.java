@@ -71,7 +71,7 @@ public class CloudbeesServer {
 
     public static class CloudbessServlet extends HttpServlet {
 
-        public List <FileItem> items;
+        public List<FileItem> items;
 
         @Override
         protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
