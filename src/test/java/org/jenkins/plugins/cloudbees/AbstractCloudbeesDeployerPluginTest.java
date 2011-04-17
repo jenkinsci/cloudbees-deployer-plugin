@@ -26,12 +26,17 @@ public abstract class AbstractCloudbeesDeployerPluginTest  extends HudsonTestCas
 
     public CloudbeesServer cloudbeesServer = new CloudbeesServer();
 
+    public CloudbeesAccount cloudbeesAccount;
+
     @Override
     protected void setUp()
         throws Exception
     {
         super.setUp();
         this.cloudbeesServer.startServer();
+        cloudbeesAccount = new CloudbeesAccount( "olamy", "key", "so secret key" );
+        CloudbeesPublisher.DESCRIPTOR.setAccounts( cloudbeesAccount );
+        CloudbeesPublisher.DescriptorImpl.CLOUDBEES_API_URL = "http://localhost:" + cloudbeesServer.getPort();
     }
 
     @Override

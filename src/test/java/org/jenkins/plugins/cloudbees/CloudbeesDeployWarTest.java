@@ -17,6 +17,8 @@ package org.jenkins.plugins.cloudbees;
 
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.model.FreeStyleProject;
+import hudson.tasks.Ant;
 import hudson.tasks.Maven;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.IOUtils;
@@ -43,15 +45,24 @@ public class CloudbeesDeployWarTest
         MavenModuleSet m = createMavenProject();
         Maven.MavenInstallation mavenInstallation = configureDefaultMaven();
         m.setMaven( mavenInstallation.getName() );
-        CloudbeesAccount cloudbeesAccount = new CloudbeesAccount( "olamy", "key", "so secret key" );
-        CloudbeesPublisher.DESCRIPTOR.setAccounts( cloudbeesAccount );
-        CloudbeesPublisher.DescriptorImpl.CLOUDBEES_API_URL = "http://localhost:" + cloudbeesServer.getPort();
+
         m.setGoals( "clean install" );
         m.setScm( new ExtractResourceSCM( getClass().getResource( "test-project.zip" ) ) );
         m.getPublishers().add( new CloudbeesPublisher( "olamy", "foo/beer", null ) );
         MavenModuleSetBuild mmsb = buildAndAssertSuccess( m );
         assertOnFileItems();
     }
+
+    public void testFreestyleAnt() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.setScm( new ExtractResourceSCM( getClass().getResource( "test-project.zip" ) ) );
+        String antName = configureDefaultAnt().getName();
+        p.getPublishersList().add( new CloudbeesPublisher( "olamy", "foo/beer", "build-war/*.war" ) );
+        p.getBuildersList().add(new Ant("", antName, null, null, "vBAR=<xml/>\n"));
+        buildAndAssertSuccess( p );
+        assertOnFileItems();
+    }
+
 
     public void assertOnFileItems()
         throws IOException
