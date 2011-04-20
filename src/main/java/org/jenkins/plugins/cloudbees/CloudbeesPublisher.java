@@ -46,6 +46,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jenkins.plugins.cloudbees.util.FileFinder;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -113,6 +114,24 @@ public class CloudbeesPublisher extends Notifier {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, final BuildListener listener)
             throws InterruptedException, IOException {
         listener.getLogger().println(Messages._CloudbeesPublisher_perform(this.getCloudbeesAccount().name, this.applicationId));
+
+        listener.getLogger().println(" build class " + build.getClass().getName());
+        if (build instanceof MavenModuleSetBuild) {
+            MavenModuleSetBuild mavenModuleSetBuild = (MavenModuleSetBuild) build;
+            String mavenVersion =  mavenModuleSetBuild.getMavenVersionUsed();
+            // with maven this perform is called after each project build
+            // so we have to check if all modules has been build
+            if (maven3orLater( mavenVersion )) {
+                int buildingNumber = 0;
+                for (MavenModule mavenModule : mavenModuleSetBuild.getModuleBuilds().keySet()) {
+                    listener.getLogger().println(" mavenModule " + mavenModule.getDisplayName() + ":" + mavenModule.isBuilding());
+
+                    if (mavenModule.isBuilding()) buildingNumber++;
+                }
+                listener.getLogger().println(" buildingNumber " + buildingNumber);
+                if (buildingNumber > 1) return true;
+            }
+        }
 
         CloudbeesAccount cloudbeesAccount = this.getCloudbeesAccount();
 
@@ -394,6 +413,13 @@ public class CloudbeesPublisher extends Notifier {
 
     }
 
+    public static boolean maven3orLater(String mavenVersion) {
+        // null or empty so false !
+        if (StringUtils.isBlank( mavenVersion )) {
+            return false;
+        }
+        return new ComparableVersion(mavenVersion).compareTo( new ComparableVersion ("3.0") ) >= 0;
+    }
 
     private static final Logger LOGGER = Logger.getLogger(CloudbeesPublisher.class.getName());
 }
