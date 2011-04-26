@@ -38,7 +38,7 @@
     <dependency>
       <groupId>com.cloudbees</groupId>
       <artifactId>cloudbees-api-client-nodeps</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>0.8.0</version>
       <exclusions>
         <!-- to prevent issues with the one coming from jenkins core -->
         <exclusion>
