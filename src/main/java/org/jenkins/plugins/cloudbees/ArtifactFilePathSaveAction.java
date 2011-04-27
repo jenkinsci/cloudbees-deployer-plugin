@@ -23,6 +23,7 @@ import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.Action;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,7 +34,7 @@ import java.util.Set;
  * @author Olivier Lamy
  */
 public class ArtifactFilePathSaveAction
-        implements AggregatableAction, MavenAggregatedReport {
+        implements AggregatableAction, MavenAggregatedReport, Serializable {
 
     final Set<MavenArtifactWithFilePath> mavenArtifactWithFilePaths;
 

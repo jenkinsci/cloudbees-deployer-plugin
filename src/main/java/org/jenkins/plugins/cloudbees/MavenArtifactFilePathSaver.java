@@ -42,24 +42,36 @@ public class MavenArtifactFilePathSaver extends MavenReporter {
         return true;
     }
 
+    /*
+    @Override
+    public boolean leaveModule( MavenBuildProxy build, MavenProject pom, BuildListener listener )
+        throws InterruptedException, IOException
+    {
+        return postBuild( build, pom, listener );
+    }
+    */
+
     public boolean postBuild(MavenBuildProxy build, MavenProject pom, final BuildListener listener) throws InterruptedException, IOException {
 
-        if (pom.getFile() != null) {
+        listener.getLogger().println("post build " + (pom.getArtifact() != null) + ":" + (pom.getAttachedArtifacts() != null));
+        if (pom.getArtifact() != null || pom.getAttachedArtifacts() != null) {
             final Set<MavenArtifactWithFilePath> mavenArtifacts = new HashSet<MavenArtifactWithFilePath>();
-            // record main artifact (if packaging is POM, this doesn't exist)
-            final MavenArtifact mainArtifact = MavenArtifact.create(pom.getArtifact());
-            if (mainArtifact != null) {
-                //TODO take of NPE !!
-                mavenArtifacts.add(new MavenArtifactWithFilePath(pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), pom.getArtifact().getFile().getPath(), pom.getArtifact().getType()));
-            }
-
-            // record attached artifacts
-            final List<MavenArtifact> attachedArtifacts = new ArrayList<MavenArtifact>();
-            for (Artifact a : (List<Artifact>) pom.getAttachedArtifacts()) {
-                MavenArtifact ma = MavenArtifact.create(a);
-                if (ma != null) {
+            if (pom.getArtifact() != null) {
+                final MavenArtifact mainArtifact = MavenArtifact.create(pom.getArtifact());
+                if (mainArtifact != null) {
                     //TODO take of NPE !!
                     mavenArtifacts.add(new MavenArtifactWithFilePath(pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), pom.getArtifact().getFile().getPath(), pom.getArtifact().getType()));
+                }
+            }
+            if (pom.getAttachedArtifacts()!=null) {
+                // record attached artifacts
+                final List<MavenArtifact> attachedArtifacts = new ArrayList<MavenArtifact>();
+                for (Artifact a : pom.getAttachedArtifacts()) {
+                    MavenArtifact ma = MavenArtifact.create(a);
+                    if (ma != null) {
+                        //TODO take of NPE !!
+                        mavenArtifacts.add(new MavenArtifactWithFilePath(pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), pom.getArtifact().getFile().getPath(), pom.getArtifact().getType()));
+                    }
                 }
             }
 
@@ -74,6 +86,7 @@ public class MavenArtifactFilePathSaver extends MavenReporter {
                         artifactFilePathSaveAction.mavenArtifactWithFilePaths.addAll(mavenArtifacts);
                     }
                     build.addAction(artifactFilePathSaveAction);
+                    build.save();
                     return null;
                 }
             });

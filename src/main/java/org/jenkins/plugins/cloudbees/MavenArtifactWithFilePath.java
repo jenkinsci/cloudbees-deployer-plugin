@@ -66,4 +66,10 @@ public class MavenArtifactWithFilePath
         return hashCode;
     }
 
+    @Override
+    public String toString()
+    {
+        return "MavenArtifactWithFilePath{" + "groupId='" + groupId + '\'' + ", artifactId='" + artifactId + '\''
+            + ", version='" + version + '\'' + ", filePath='" + filePath + '\'' + ", type='" + type + '\'' + '}';
+    }
 }

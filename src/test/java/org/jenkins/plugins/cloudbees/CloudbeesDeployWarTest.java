@@ -53,16 +53,16 @@ public class CloudbeesDeployWarTest
         assertOnFileItems();
     }
 
-    public void failedtestWithMaven3Project()
+    public void failtestWithMaven3ProjectWithPattern()
         throws Exception
     {
         MavenModuleSet m = createMavenProject();
         Maven.MavenInstallation mavenInstallation = configureMaven3();
         m.setMaven( mavenInstallation.getName() );
 
-        m.setGoals( "clean install" );
+        m.setGoals( "clean install -e -X" );
         m.setScm( new ExtractResourceSCM( getClass().getResource( "test-project.zip" ) ) );
-        m.getPublishers().add( new CloudbeesPublisher( "olamy", "foo/beer", null ) );
+        m.getPublishers().add( new CloudbeesPublisher( "olamy", "foo/beer", "**/translate-puzzle-webapp/**target**/*.war" ) );
         MavenModuleSetBuild mmsb = buildAndAssertSuccess( m );
         assertOnFileItems();
     }

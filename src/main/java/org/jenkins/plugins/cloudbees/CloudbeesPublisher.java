@@ -113,26 +113,13 @@ public class CloudbeesPublisher extends Notifier {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, final BuildListener listener)
             throws InterruptedException, IOException {
+
+        //List<MavenArtifactRecord> mavenArtifactRecords = build.getActions( MavenArtifactRecord.class );
+
+
         listener.getLogger().println(Messages._CloudbeesPublisher_perform(this.getCloudbeesAccount().name, this.applicationId));
 
-        listener.getLogger().println(" build class " + build.getClass().getName());
-        if (build instanceof MavenModuleSetBuild) {
-            MavenModuleSetBuild mavenModuleSetBuild = (MavenModuleSetBuild) build;
-            String mavenVersion =  mavenModuleSetBuild.getMavenVersionUsed();
-            // with maven this perform is called after each project build
-            // so we have to check if all modules has been build
-            if (maven3orLater( mavenVersion )) {
-                int buildingNumber = 0;
-                for (MavenModule mavenModule : mavenModuleSetBuild.getModuleBuilds().keySet()) {
-                    listener.getLogger().println(" mavenModule " + mavenModule.getDisplayName() + ":" + mavenModule.isBuilding());
-
-                    if (mavenModule.isBuilding()) buildingNumber++;
-                }
-                listener.getLogger().println(" buildingNumber " + buildingNumber);
-                if (buildingNumber > 1) return true;
-            }
-        }
-
+        //listener.getLogger().println(" build class " + build.getClass().getName());
         CloudbeesAccount cloudbeesAccount = this.getCloudbeesAccount();
 
         CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
@@ -143,8 +130,8 @@ public class CloudbeesPublisher extends Notifier {
                 build.getActions(ArtifactFilePathSaveAction.class);
 
         if (artifactFilePathSaveActions.isEmpty() && StringUtils.isBlank(filePattern)) {
-            listener.getLogger().println(Messages._CloudbeesPublisher_noArtifacts());
-            return false;
+            listener.getLogger().println(Messages._CloudbeesPublisher_noArtifacts( build.getProject().getName() ));
+            return true;
         }
 
         String warPath = null;
