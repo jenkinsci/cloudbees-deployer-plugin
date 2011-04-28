@@ -15,7 +15,7 @@
 
   <packaging>hpi</packaging>
 
-  <name>Cloudbees Plugin</name>
+  <name>Cloudbees Deployer Plugin</name>
 
   <properties>
     <coreVersion>${project.parent.version}</coreVersion>
