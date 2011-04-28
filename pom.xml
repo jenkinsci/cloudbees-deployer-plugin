@@ -16,6 +16,14 @@
   <packaging>hpi</packaging>
 
   <name>Cloudbees Deployer Plugin</name>
+  <description>Integrates Jenkins to Cloudbees @RUN</description>
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/Cloudbees+Deployer+Plugin</url>
+
+  <scm>
+   <connection>scm:git:git://github.com/olamy/cloudbees-deployer-plugin.git</connection>
+   <developerConnection>scm:git:git@github.com:olamy/cloudbees-deployer-plugin.git</developerConnection>
+   <url>https://github.com/olamy/cloudbees-deployer-plugin</url>
+  </scm>
 
   <properties>
     <coreVersion>${project.parent.version}</coreVersion>
