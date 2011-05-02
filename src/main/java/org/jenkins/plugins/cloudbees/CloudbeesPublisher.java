@@ -294,7 +294,10 @@ public class CloudbeesPublisher extends Notifier {
                     LOGGER.log(Level.SEVERE, "Error during calling cloudbees api", e);
                     return FormValidation.error("Unknown error check server logs");
                 } else {
-                    return FormValidation.error(e.getError().getMessage());
+                    // we assume here it's a authz issue
+                    LOGGER.warning( e.getError().getMessage() );
+                    //return FormValidation.error(e.getError().getMessage());
+                    return FormValidation.error( Messages._CloudbeesPublisher_authenticationFailure().toString() );
                 }
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "Error during calling cloudbees api", e);
