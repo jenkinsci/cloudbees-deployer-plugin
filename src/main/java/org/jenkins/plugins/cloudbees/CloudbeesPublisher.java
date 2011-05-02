@@ -227,6 +227,9 @@ public class CloudbeesPublisher extends Notifier {
 
         private final CopyOnWriteList<CloudbeesAccount> accounts = new CopyOnWriteList<CloudbeesAccount>();
 
+        // public so could be disable programatically
+        public boolean disableAccountSetup = false;
+
         // configurable ?
         // so here last with a public static field it's possible to change tru a groovy script
         public static String CLOUDBEES_API_URL = "https://api.cloudbees.com/api";
@@ -320,6 +323,10 @@ public class CloudbeesPublisher extends Notifier {
 
         public CloudbeesAccount[] getAccounts() {
             return accounts.toArray(new CloudbeesAccount[accounts.size()]);
+        }
+
+        public boolean isDisableAccountSetup() {
+            return disableAccountSetup || "true".equalsIgnoreCase( System.getProperty( "cloudbees.disableAccountSetup" ));
         }
 
         @Override
