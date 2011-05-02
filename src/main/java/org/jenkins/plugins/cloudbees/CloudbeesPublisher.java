@@ -76,12 +76,17 @@ public class CloudbeesPublisher extends Notifier {
     @DataBoundConstructor
     public CloudbeesPublisher(String accountName, String applicationId, String filePattern)
             throws Exception {
+        System.out.println( "new CloudbeesPublisher" );
         if (accountName == null) {
             // revert to first one
+
             CloudbeesAccount[] accounts = DESCRIPTOR.getAccounts();
 
-            if (accounts.length > 0) {
+            if (accounts != null && accounts.length > 0) {
                 accountName = accounts[0].name;
+            } else
+            {
+                accountName = "";
             }
         }
         this.accountName = accountName;
@@ -92,11 +97,16 @@ public class CloudbeesPublisher extends Notifier {
     }
 
     public CloudbeesAccount getCloudbeesAccount() {
+        System.out.println( "getCloudbeesAccount" );
         CloudbeesAccount[] accounts = DESCRIPTOR.getAccounts();
         if (accountName == null && accounts.length > 0) {
             // return default
-            return accounts[0];
+            if (accounts != null) {
+                return accounts[0];
+            }
+            return null;
         }
+
         for (CloudbeesAccount account : accounts) {
             if (account.name.equals(accountName)) {
                 return account;
@@ -311,7 +321,7 @@ public class CloudbeesPublisher extends Notifier {
         }
 
         public CloudbeesAccount[] getAccounts() {
-            return accounts.toArray(new CloudbeesAccount[0]);
+            return accounts.toArray(new CloudbeesAccount[accounts.size()]);
         }
 
         @Override
