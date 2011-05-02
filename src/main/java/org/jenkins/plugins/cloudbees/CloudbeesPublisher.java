@@ -76,7 +76,6 @@ public class CloudbeesPublisher extends Notifier {
     @DataBoundConstructor
     public CloudbeesPublisher(String accountName, String applicationId, String filePattern)
             throws Exception {
-        System.out.println( "new CloudbeesPublisher" );
         if (accountName == null) {
             // revert to first one
 
@@ -97,7 +96,6 @@ public class CloudbeesPublisher extends Notifier {
     }
 
     public CloudbeesAccount getCloudbeesAccount() {
-        System.out.println( "getCloudbeesAccount" );
         CloudbeesAccount[] accounts = DESCRIPTOR.getAccounts();
         if (accountName == null && accounts.length > 0) {
             // return default
