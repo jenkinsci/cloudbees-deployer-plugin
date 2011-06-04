@@ -125,10 +125,16 @@ public class CloudbeesPublisher extends Notifier {
         //List<MavenArtifactRecord> mavenArtifactRecords = build.getActions( MavenArtifactRecord.class );
 
 
-        listener.getLogger().println(Messages._CloudbeesPublisher_perform(this.getCloudbeesAccount().name, this.applicationId));
 
         //listener.getLogger().println(" build class " + build.getClass().getName());
         CloudbeesAccount cloudbeesAccount = this.getCloudbeesAccount();
+        
+        if (cloudbeesAccount == null) {
+            listener.getLogger().println(Messages._CloudbeesPublisher_noAccount());
+            return false;
+        }
+
+        listener.getLogger().println(Messages._CloudbeesPublisher_perform(this.getCloudbeesAccount().name, this.applicationId));
 
         CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
                 new CloudbeesApiHelper.CloudbeesApiRequest(DescriptorImpl.CLOUDBEES_API_URL, cloudbeesAccount.apiKey,
@@ -165,6 +171,9 @@ public class CloudbeesPublisher extends Notifier {
             listener.getLogger().println("found remote files : " + fileNames);
             if (fileNames.size() > 1) {
                 listener.getLogger().println("your pattern must return only one file to deploy");
+                return false;
+            } else if (fileNames.size() == 0) {
+                listener.getLogger().println(Messages._CloudbeesPublisher_noArtifactsFound(filePattern));
                 return false;
             }
             // so we use only the first found
@@ -365,7 +374,7 @@ public class CloudbeesPublisher extends Notifier {
                     sb.append(appId + " ");
                 }
 
-                return FormValidation.error("possible applicationIds are " + sb.toString());
+                return FormValidation.ok("This application ID was not found, so using it will create a new application. Existing application ID's are: \n " + sb.toString());
             } catch (Exception e) {
                 return FormValidation.error(e, "error during check applicationId " + e.getMessage());
             }
