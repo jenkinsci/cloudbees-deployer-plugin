@@ -374,7 +374,7 @@ public class CloudbeesPublisher extends Notifier {
                     sb.append(appId + " ");
                 }
 
-                return FormValidation.error("possible applicationIds are " + sb.toString());
+                return FormValidation.ok("This application ID was not found, so using it will create a new application. Existing application ID's are: \n " + sb.toString());
             } catch (Exception e) {
                 return FormValidation.error(e, "error during check applicationId " + e.getMessage());
             }
