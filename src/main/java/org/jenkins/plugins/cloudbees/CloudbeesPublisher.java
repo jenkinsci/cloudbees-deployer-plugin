@@ -172,6 +172,9 @@ public class CloudbeesPublisher extends Notifier {
             if (fileNames.size() > 1) {
                 listener.getLogger().println("your pattern must return only one file to deploy");
                 return false;
+            } else if (fileNames.size() == 0) {
+                listener.getLogger().println(Messages._CloudbeesPublisher_noArtifactsFound(filePattern));
+                return false;
             }
             // so we use only the first found
             warPath = fileNames.get(0);
