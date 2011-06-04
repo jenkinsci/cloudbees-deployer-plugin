@@ -125,10 +125,16 @@ public class CloudbeesPublisher extends Notifier {
         //List<MavenArtifactRecord> mavenArtifactRecords = build.getActions( MavenArtifactRecord.class );
 
 
-        listener.getLogger().println(Messages._CloudbeesPublisher_perform(this.getCloudbeesAccount().name, this.applicationId));
 
         //listener.getLogger().println(" build class " + build.getClass().getName());
         CloudbeesAccount cloudbeesAccount = this.getCloudbeesAccount();
+        
+        if (cloudbeesAccount == null) {
+            listener.getLogger().println(Messages._CloudbeesPublisher_noAccount());
+            return false;
+        }
+
+        listener.getLogger().println(Messages._CloudbeesPublisher_perform(this.getCloudbeesAccount().name, this.applicationId));
 
         CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
                 new CloudbeesApiHelper.CloudbeesApiRequest(DescriptorImpl.CLOUDBEES_API_URL, cloudbeesAccount.apiKey,
