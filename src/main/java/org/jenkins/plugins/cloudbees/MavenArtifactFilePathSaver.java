@@ -54,11 +54,11 @@ public class MavenArtifactFilePathSaver extends MavenReporter {
     public boolean postBuild(MavenBuildProxy build, MavenProject pom, final BuildListener listener) throws InterruptedException, IOException {
 
         listener.getLogger().println("post build " + (pom.getArtifact() != null) + ":" + (pom.getAttachedArtifacts() != null));
-        if (pom.getArtifact() != null || pom.getAttachedArtifacts() != null) {
+        if (pom != null && pom.getArtifact() != null || pom.getAttachedArtifacts() != null) {
             final Set<MavenArtifactWithFilePath> mavenArtifacts = new HashSet<MavenArtifactWithFilePath>();
             if (pom.getArtifact() != null) {
                 final MavenArtifact mainArtifact = MavenArtifact.create(pom.getArtifact());
-                if (mainArtifact != null) {
+                if (mainArtifact != null && pom.getArtifact() != null && pom.getArtifact().getFile() != null) {
                     //TODO take of NPE !!
                     mavenArtifacts.add(new MavenArtifactWithFilePath(pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), pom.getArtifact().getFile().getPath(), pom.getArtifact().getType()));
                 }
@@ -68,8 +68,7 @@ public class MavenArtifactFilePathSaver extends MavenReporter {
                 final List<MavenArtifact> attachedArtifacts = new ArrayList<MavenArtifact>();
                 for (Artifact a : pom.getAttachedArtifacts()) {
                     MavenArtifact ma = MavenArtifact.create(a);
-                    if (ma != null) {
-                        //TODO take of NPE !!
+                    if (ma != null && pom.getArtifact() != null && pom.getArtifact().getFile() != null) {
                         mavenArtifacts.add(new MavenArtifactWithFilePath(pom.getGroupId(), pom.getArtifactId(), pom.getVersion(), pom.getArtifact().getFile().getPath(), pom.getArtifact().getType()));
                     }
                 }
