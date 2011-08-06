@@ -202,6 +202,10 @@ public class CloudbeesPublisher extends Notifier {
                     description, warPath, warPath,
                     new ConsoleListenerUploadProgress(
                             listener));
+            CloudbeesDeployerAction cloudbeesDeployerAction = new CloudbeesDeployerAction( applicationId );
+            cloudbeesDeployerAction.setDescription( description );
+
+            build.addAction( cloudbeesDeployerAction );
         } catch (Exception e) {
             listener.getLogger().println("issue during deploying war " + e.getMessage());
             throw new IOException2(e.getMessage(), e);
