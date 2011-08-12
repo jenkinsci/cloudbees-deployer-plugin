@@ -15,20 +15,12 @@
  */
 package org.jenkins.plugins.cloudbees;
 
-import com.cloudbees.api.ApplicationInfo;
-import com.cloudbees.api.ApplicationListResponse;
-import com.cloudbees.api.BeesClientException;
-import com.cloudbees.api.UploadProgress;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.maven.MavenBuild;
-import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSetBuild;
-import hudson.maven.reporters.MavenAbstractArtifactRecord;
-import hudson.maven.reporters.MavenArtifact;
-import hudson.maven.reporters.MavenArtifactRecord;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.AutoCompletionCandidates;
@@ -42,9 +34,17 @@ import hudson.tasks.Publisher;
 import hudson.util.CopyOnWriteList;
 import hudson.util.FormValidation;
 import hudson.util.IOException2;
-import net.sf.json.JSONObject;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jenkins.plugins.cloudbees.util.FileFinder;
@@ -52,15 +52,11 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.servlet.ServletException;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.cloudbees.api.ApplicationInfo;
+import com.cloudbees.api.ApplicationListResponse;
+import com.cloudbees.api.BeesClientException;
+import com.cloudbees.api.UploadProgress;
+import net.sf.json.JSONObject;
 
 /**
  * @author Olivier Lamy
@@ -140,44 +136,45 @@ public class CloudbeesPublisher extends Notifier {
                 new CloudbeesApiHelper.CloudbeesApiRequest(DescriptorImpl.CLOUDBEES_API_URL, cloudbeesAccount.apiKey,
                         cloudbeesAccount.secretKey);
 
-        List<ArtifactFilePathSaveAction> artifactFilePathSaveActions =
-                build.getActions(ArtifactFilePathSaveAction.class);
+        List<ArtifactFilePathSaveAction> artifactFilePathSaveActions = retrieveArtifactFilePathSaveActions(build);
 
         if (artifactFilePathSaveActions.isEmpty() && StringUtils.isBlank(filePattern)) {
             listener.getLogger().println(Messages._CloudbeesPublisher_noArtifacts( build.getProject().getName() ));
             return true;
         }
 
-        String warPath = null;
 
+        String warPath = null;
+        findWarPath:
         for (ArtifactFilePathSaveAction artifactFilePathSaveAction : artifactFilePathSaveActions) {
-            listener.getLogger().println("artifacts " + artifactFilePathSaveAction.mavenArtifactWithFilePaths);
             for (MavenArtifactWithFilePath artifactWithFilePath : artifactFilePathSaveAction.mavenArtifactWithFilePaths) {
                 if (StringUtils.equals("war", artifactWithFilePath.type)) {
-                    listener.getLogger().println("artifactWithFilePath" + artifactWithFilePath.filePath);
+                    listener.getLogger().println(Messages.CloudbeesPublisher_WarPathFound(artifactWithFilePath) );
                     warPath = artifactWithFilePath.filePath;
+                    break findWarPath;
                 }
             }
         }
 
-        if (StringUtils.isBlank(warPath) && StringUtils.isBlank(filePattern)) {
-            listener.getLogger().println(Messages._CloudbeesPublisher_noWarArtifacts());
-            return false;
-        }
-        if (StringUtils.isBlank(warPath) && !StringUtils.isBlank(filePattern)) {
-            //search file in the workspace with the pattern
-            FileFinder fileFinder = new FileFinder(filePattern);
-            List<String> fileNames = build.getWorkspace().act(fileFinder);
-            listener.getLogger().println("found remote files : " + fileNames);
-            if (fileNames.size() > 1) {
-                listener.getLogger().println("your pattern must return only one file to deploy");
+        if (StringUtils.isBlank(warPath)) {
+             if (StringUtils.isBlank(filePattern)) {
+                listener.getLogger().println(Messages._CloudbeesPublisher_noWarArtifacts());
                 return false;
-            } else if (fileNames.size() == 0) {
-                listener.getLogger().println(Messages._CloudbeesPublisher_noArtifactsFound(filePattern));
-                return false;
-            }
-            // so we use only the first found
-            warPath = fileNames.get(0);
+            } else {
+                 //search file in the workspace with the pattern
+                FileFinder fileFinder = new FileFinder(filePattern);
+                List<String> fileNames = build.getWorkspace().act(fileFinder);
+                listener.getLogger().println("found remote files : " + fileNames);
+                if (fileNames.size() > 1) {
+                    listener.getLogger().println(Messages.CloudbeesPublisher_ToManyFilesMatchingPattern());
+                    return false;
+                } else if (fileNames.size() == 0) {
+                    listener.getLogger().println(Messages._CloudbeesPublisher_noArtifactsFound(filePattern));
+                    return false;
+                }
+                // so we use only the first found
+                warPath = fileNames.get(0);
+             }
         }
 
 
@@ -195,7 +192,7 @@ public class CloudbeesPublisher extends Notifier {
 
             warPath = tmpArchive.getPath();
 
-            listener.getLogger().println(" deploying archive to cloudbees application " + applicationId);
+            listener.getLogger().println(Messages.CloudbeesPublisher_Deploying(applicationId));
 
             String description = "Jenkins build " + build.getId();
             CloudbeesApiHelper.getBeesClient(apiRequest).applicationDeployWar(applicationId, "environnement",
@@ -214,6 +211,22 @@ public class CloudbeesPublisher extends Notifier {
         }
 
         return true;
+    }
+
+    private List<ArtifactFilePathSaveAction> retrieveArtifactFilePathSaveActions(AbstractBuild<?, ?> build) {
+        List<ArtifactFilePathSaveAction> artifactFilePathSaveActions = new ArrayList<ArtifactFilePathSaveAction>();
+        List<ArtifactFilePathSaveAction> actions = build.getActions(ArtifactFilePathSaveAction.class);
+        if (actions != null) artifactFilePathSaveActions.addAll(actions);
+
+        if (build instanceof MavenModuleSetBuild) {
+            for (List<MavenBuild> mavenBuilds : ((MavenModuleSetBuild) build).getModuleBuilds().values()) {
+                for (MavenBuild mavenBuild : mavenBuilds) {
+                    actions = mavenBuild.getActions(ArtifactFilePathSaveAction.class);
+                    if (actions != null) artifactFilePathSaveActions.addAll(actions);
+                }
+            }
+        }
+        return artifactFilePathSaveActions;
     }
 
     private static class ConsoleListenerUploadProgress

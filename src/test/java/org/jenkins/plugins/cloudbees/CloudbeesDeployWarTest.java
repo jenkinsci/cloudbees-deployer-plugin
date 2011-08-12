@@ -20,10 +20,6 @@ import hudson.maven.MavenModuleSetBuild;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Ant;
 import hudson.tasks.Maven;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.jvnet.hudson.test.ExtractResourceSCM;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.jvnet.hudson.test.ExtractResourceSCM;
 
 /**
  * @author Olivier Lamy
@@ -53,16 +54,26 @@ public class CloudbeesDeployWarTest
         assertOnFileItems();
     }
 
-    public void failtestWithMaven3ProjectWithPattern()
+    /**
+     * Fails with :
+Caused by: java.io.IOException: Remote call on channel failed
+	at hudson.remoting.Channel.call(Channel.java:652)
+	at hudson.remoting.RemoteInvocationHandler.invoke(RemoteInvocationHandler.java:158)
+	... 31 more
+Caused by: java.lang.AssertionError
+	at hudson.model.Run.setResult(Run.java:329)
+	at hudson.maven.MavenBuild$ProxyImpl.setResult(MavenBuild.java:427)
+     */
+    public void failtestWithMaven3Project()
         throws Exception
     {
         MavenModuleSet m = createMavenProject();
         Maven.MavenInstallation mavenInstallation = configureMaven3();
         m.setMaven( mavenInstallation.getName() );
 
-        m.setGoals( "clean install -e -X" );
+        m.setGoals( "clean install" );
         m.setScm( new ExtractResourceSCM( getClass().getResource( "test-project.zip" ) ) );
-        m.getPublishers().add( new CloudbeesPublisher( "olamy", "foo/beer", "**/translate-puzzle-webapp/**target**/*.war" ) );
+        m.getPublishers().add( new CloudbeesPublisher( "olamy", "foo/beer", null ) );
         MavenModuleSetBuild mmsb = buildAndAssertSuccess( m );
         assertOnFileItems();
     }
