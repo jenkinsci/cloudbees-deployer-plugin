@@ -14,7 +14,7 @@
           </f:entry>
           <f:entry title="${%Secret Key}" help="/plugin/cloudbees-deployer-plugin/help-keys.html">
             <f:password name="cloudbeesaccount.secretKey" value="${account.secretKey}"
-                checkUrl="'${rootURL}/publisher/CloudbeesPublisher/secretKeyCheck?secretKey='+escape(this.value)+'&amp;apiKey='+escape(Form.findMatchingInput(this,'cloudbeesaccount.apiKey').value)" />
+                checkUrl="'${rootURL}/publisher/CloudbeesPublisher/secretKeyCheck?secretKey='+encodeURIComponent(this.value)+'&amp;apiKey='+encodeURIComponent(Form.findMatchingInput(this,'cloudbeesaccount.apiKey').value)" />
           </f:entry>
           <f:entry title="">
             <div align="right">
