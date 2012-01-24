@@ -1,5 +1,0 @@
-<sacha> click "play" for deploy, if already done once, go directly
-<sacha> if never done: ask for appid, then store appid for job than go
-<sacha> next time appid is stored so simpler
-
-add a deploy action to deploy a build 

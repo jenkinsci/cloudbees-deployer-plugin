@@ -1,8 +1,20 @@
-build
-target
+# Maven generated files
+target/
+
+# hpi:run temporary files
+work/
+
+# IntelliJ project files
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# eclipse project files
+.settings
 .classpath
 .project
-.settings
-*.iml
-work
+build/
+
+# locally stored credentials
 test-keys.txt

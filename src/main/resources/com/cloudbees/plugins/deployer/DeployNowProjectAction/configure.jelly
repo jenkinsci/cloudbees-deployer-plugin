@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ The MIT License
+ ~
+ ~ Copyright (c) 2011-2014, CloudBees, Inc.
+ ~
+ ~ Permission is hereby granted, free of charge, to any person obtaining a copy
+ ~ of this software and associated documentation files (the "Software"), to deal
+ ~ in the Software without restriction, including without limitation the rights
+ ~ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ ~ copies of the Software, and to permit persons to whom the Software is
+ ~ furnished to do so, subject to the following conditions:
+ ~
+ ~ The above copyright notice and this permission notice shall be included in
+ ~ all copies or substantial portions of the Software.
+ ~
+ ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ ~ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ ~ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ ~ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ ~ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ ~ THE SOFTWARE.
+ -->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout"
+         xmlns:f="/lib/form">
+  <l:layout title="${it.displayName}" norefresh="true" permission="${it.EXTENDED_READ}">
+    <st:include page="sidepanel.jelly" it="${it.owner}"/>
+    <l:main-panel>
+      <h1>${%Deploy Now}</h1>
+      <f:form method="post" action="../${it.lastDeployableBuild.number}/deploy-now/deploy" name="deploy">
+        <f:entry title="${%Build}">
+          <j:scope>
+            <j:set var="build" value="${it.lastDeployableBuild}"/>
+            <j:set var="color" value="${build.iconColor}"/>
+            <img src="${color.getImageOf('16x16')}" alt="${color.description}"
+                 tooltip="${color.description}" class="icon16x16"/>
+            #${build.number}
+          </j:scope>
+        </f:entry>
+        <st:include page="deployHosts.jelly" it="${it.createHostsContext()}"/>
+
+        <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
+          <tr>
+            <td class="setting-leftspace">
+              <st:nbsp/>
+            </td>
+
+            <td colspan="2">
+              <f:checkbox title="${%Use this configuration as the default Deploy Now configuration for this project}"
+                          name="saveConfig" checked="true" disabled="${it.saveConfigForced}"/>
+            </td>
+            <td class="setting-help">
+              <a href="#" class="help-button"
+                 helpURL="${rootURL}/plugin/cloudbees-deployer-plugin/help-saveConfig.html">
+                <img src="${imagesURL}/16x16/help.png"
+                     alt="Help for feature: ${%Use this configuration as the default Deploy Now configuration for this project}"
+                     height="16" width="16"/>
+              </a>
+            </td>
+          </tr>
+          <f:helpArea/>
+          <tr>
+            <td class="setting-leftspace">
+              <st:nbsp/>
+            </td>
+            <td colspan="2">
+              <f:checkbox title="${%Enable one-click deployment}" field="oneClickDeploy"
+                          checked="${it.oneClickDeploy}"/>
+            </td>
+            <td class="setting-help">
+              <a href="#" class="help-button"
+                 helpURL="${rootURL}/plugin/cloudbees-deployer-plugin/help-oneClickDeploy.html">
+                <img src="${imagesURL}/16x16/help.png" alt="Help for feature: ${%Enable one-click deployment}"
+                     height="16" width="16"/>
+              </a>
+            </td>
+          </tr>
+          <f:helpArea/>
+        </j:if>
+
+        <j:if test="${h.hasPermission(it,it.DEPLOY)}">
+          <f:block>
+            <f:submit value="${%Deploy}"/>
+            <j:if test="${it.oneClickDeployValid}">
+              <span id="autoDeployContainer">&#160;in&#160;<span id="autoDeploy">60</span>s.&#160;
+                <a href="#"
+                   onclick="clearTimeout(r); document.getElementById('autoDeployContainer').innerHTML=''; return false;">
+                  Abort one-click deployment.
+                </a>
+              </span>
+              <script type="text/javascript">
+                x = 60;
+                function countdown() {
+                  if (x > 1) {
+                    x--;
+                    document.getElementById("autoDeploy").innerHTML = x;
+                    r = setTimeout("countdown()", 1000);
+                  }
+                  else {
+                    clearTimeout(r);
+                    document.getElementById("autoDeploy").innerHTML = 0;
+                    if (document.forms["deploy"].onsubmit &amp;&amp; !document.forms["deploy"].onsubmit()) {
+                      return;
+                    }
+                    document.forms["deploy"].submit();
+                  }
+                }
+
+                r = setTimeout("countdown()", 1000);
+              </script>
+            </j:if>
+          </f:block>
+        </j:if>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

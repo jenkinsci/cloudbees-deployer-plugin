@@ -20,7 +20,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
 /**
  * @author <a href="mailto:Olivier.LAMY@accor.com">Olivier Lamy</a>
  * @version $
+ * @deprecated
  */
+@Deprecated
 public class CloudbeesAccount {
     public final String name;
 
