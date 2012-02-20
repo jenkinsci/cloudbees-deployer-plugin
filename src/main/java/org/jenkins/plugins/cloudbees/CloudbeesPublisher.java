@@ -110,25 +110,6 @@ public class CloudbeesPublisher extends Notifier {
         return new CloudbeesDeployer(this).deploy(build, launcher, listener);
     }
 
-    /* package */ List<ArtifactFilePathSaveAction> retrieveArtifactFilePathSaveActions(AbstractBuild<?, ?> build) {
-        List<ArtifactFilePathSaveAction> artifactFilePathSaveActions = new ArrayList<ArtifactFilePathSaveAction>();
-        List<ArtifactFilePathSaveAction> actions = build.getActions(ArtifactFilePathSaveAction.class);
-        if (actions != null) artifactFilePathSaveActions.addAll(actions);
-
-        if (build instanceof MavenModuleSetBuild) {
-            for (List<MavenBuild> mavenBuilds : ((MavenModuleSetBuild) build).getModuleBuilds().values()) {
-                for (MavenBuild mavenBuild : mavenBuilds) {
-                    actions = mavenBuild.getActions(ArtifactFilePathSaveAction.class);
-                    if (actions != null) artifactFilePathSaveActions.addAll(actions);
-                }
-            }
-        }
-        return artifactFilePathSaveActions;
-    }
-
-
-
-
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 

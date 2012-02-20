@@ -3,6 +3,8 @@ package org.jenkins.plugins.cloudbees;
 import com.cloudbees.api.UploadProgress;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.maven.MavenBuild;
+import hudson.maven.MavenModuleSetBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
@@ -20,31 +22,34 @@ import java.util.List;
 
 public class CloudbeesDeployer {
 
-    private final CloudbeesPublisher cloudbeesPublisher;
+    public final String accountName;
+
+    public final String applicationId;
+
+    public final String filePattern;
+    
+    public final CloudbeesAccount cloudbeesAccount;
 
     public CloudbeesDeployer(CloudbeesPublisher cloudbeesPublisher) {
-        this.cloudbeesPublisher = cloudbeesPublisher;
+        this.accountName = cloudbeesPublisher.accountName;
+        this.applicationId = cloudbeesPublisher.applicationId;
+        this.filePattern = cloudbeesPublisher.filePattern;
+        this.cloudbeesAccount = cloudbeesPublisher.getCloudbeesAccount();
     }
 
     public boolean deploy(AbstractBuild<?, ?> build, Launcher launcher, final BuildListener listener)
             throws InterruptedException, IOException {
-
-        CloudbeesAccount cloudbeesAccount = cloudbeesPublisher.getCloudbeesAccount();
 
         if (cloudbeesAccount == null) {
             listener.getLogger().println(Messages._CloudbeesPublisher_noAccount());
             return false;
         }
 
-        listener.getLogger().println(Messages._CloudbeesPublisher_perform(cloudbeesPublisher.getCloudbeesAccount().name, cloudbeesPublisher.applicationId));
+        listener.getLogger().println(Messages._CloudbeesPublisher_perform(cloudbeesAccount.name, applicationId));
 
-        CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
-                new CloudbeesApiHelper.CloudbeesApiRequest(CloudbeesApiHelper.CLOUDBEES_API_URL, cloudbeesAccount.apiKey,
-                        cloudbeesAccount.secretKey);
+        List<ArtifactFilePathSaveAction> artifactFilePathSaveActions = retrieveArtifactFilePathSaveActions(build);
 
-        List<ArtifactFilePathSaveAction> artifactFilePathSaveActions = cloudbeesPublisher.retrieveArtifactFilePathSaveActions(build);
-
-        if (artifactFilePathSaveActions.isEmpty() && StringUtils.isBlank(cloudbeesPublisher.filePattern)) {
+        if (artifactFilePathSaveActions.isEmpty() && StringUtils.isBlank(filePattern)) {
             listener.getLogger().println(Messages._CloudbeesPublisher_noArtifacts(build.getProject().getName()));
             return true;
         }
@@ -63,19 +68,19 @@ public class CloudbeesDeployer {
         }
 
         if (StringUtils.isBlank(warPath)) {
-            if (StringUtils.isBlank(cloudbeesPublisher.filePattern)) {
+            if (StringUtils.isBlank(filePattern)) {
                 listener.getLogger().println(Messages._CloudbeesPublisher_noWarArtifacts());
                 return false;
             } else {
                 //search file in the workspace with the pattern
-                FileFinder fileFinder = new FileFinder(cloudbeesPublisher.filePattern);
+                FileFinder fileFinder = new FileFinder(filePattern);
                 List<String> fileNames = build.getWorkspace().act(fileFinder);
                 listener.getLogger().println("found remote files : " + fileNames);
                 if (fileNames.size() > 1) {
                     listener.getLogger().println(Messages.CloudbeesPublisher_ToManyFilesMatchingPattern());
                     return false;
                 } else if (fileNames.size() == 0) {
-                    listener.getLogger().println(Messages._CloudbeesPublisher_noArtifactsFound(cloudbeesPublisher.filePattern));
+                    listener.getLogger().println(Messages._CloudbeesPublisher_noArtifactsFound(filePattern));
                     return false;
                 }
                 // so we use only the first found
@@ -83,6 +88,15 @@ public class CloudbeesDeployer {
             }
         }
 
+        doDeploy(build, listener, warPath);
+
+        return true;
+    }
+
+    private void doDeploy(AbstractBuild<?, ?> build, BuildListener listener, String warPath) throws IOException {
+        CloudbeesApiHelper.CloudbeesApiRequest apiRequest =
+                new CloudbeesApiHelper.CloudbeesApiRequest(CloudbeesApiHelper.CLOUDBEES_API_URL, cloudbeesAccount.apiKey,
+                        cloudbeesAccount.secretKey);
 
         File tmpArchive = File.createTempFile("jenkins", "temp-cloudbees-deploy");
 
@@ -94,16 +108,17 @@ public class CloudbeesDeployer {
 
             FilePath remoteWar = build.getWorkspace().child(warPath);
 
+            // TODO why not run all this as a Callable so that this occur where the war is hosted ?
             remoteWar.copyTo(filePath);
 
             warPath = tmpArchive.getPath();
 
-            listener.getLogger().println(Messages.CloudbeesPublisher_Deploying(cloudbeesPublisher.applicationId));
+            listener.getLogger().println(Messages.CloudbeesPublisher_Deploying(applicationId));
 
             String description = "Jenkins build " + build.getId();
-            CloudbeesApiHelper.getBeesClient(apiRequest).applicationDeployWar(cloudbeesPublisher.applicationId, "environnement",
+            CloudbeesApiHelper.getBeesClient(apiRequest).applicationDeployWar(applicationId, "environnement",
                     description, warPath, warPath, new ConsoleListenerUploadProgress(listener));
-            CloudbeesDeployerAction cloudbeesDeployerAction = new CloudbeesDeployerAction(cloudbeesPublisher.applicationId);
+            CloudbeesDeployerAction cloudbeesDeployerAction = new CloudbeesDeployerAction(applicationId);
             cloudbeesDeployerAction.setDescription(description);
 
             build.addAction(cloudbeesDeployerAction);
@@ -113,9 +128,24 @@ public class CloudbeesDeployer {
         } finally {
             FileUtils.deleteQuietly(tmpArchive);
         }
-
-        return true;
     }
+
+    private List<ArtifactFilePathSaveAction> retrieveArtifactFilePathSaveActions(AbstractBuild<?, ?> build) {
+        List<ArtifactFilePathSaveAction> artifactFilePathSaveActions = new ArrayList<ArtifactFilePathSaveAction>();
+        List<ArtifactFilePathSaveAction> actions = build.getActions(ArtifactFilePathSaveAction.class);
+        if (actions != null) artifactFilePathSaveActions.addAll(actions);
+
+        if (build instanceof MavenModuleSetBuild) {
+            for (List<MavenBuild> mavenBuilds : ((MavenModuleSetBuild) build).getModuleBuilds().values()) {
+                for (MavenBuild mavenBuild : mavenBuilds) {
+                    actions = mavenBuild.getActions(ArtifactFilePathSaveAction.class);
+                    if (actions != null) artifactFilePathSaveActions.addAll(actions);
+                }
+            }
+        }
+        return artifactFilePathSaveActions;
+    }
+
 
     private class ConsoleListenerUploadProgress implements UploadProgress {
         private final PrintStream console;
