@@ -3,21 +3,25 @@ package org.jenkins.plugins.cloudbees;
 import com.cloudbees.api.UploadProgress;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.console.ConsoleNote;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import hudson.model.Node;
+import hudson.tasks._maven.MavenErrorNote;
 import hudson.util.IOException2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.jenkins.plugins.cloudbees.util.FileFinder;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class CloudbeesDeployer {
@@ -29,7 +33,7 @@ public class CloudbeesDeployer {
     public final String filePattern;
     
     public final CloudbeesAccount cloudbeesAccount;
-
+    
     public CloudbeesDeployer(CloudbeesPublisher cloudbeesPublisher) {
         this.accountName = cloudbeesPublisher.accountName;
         this.applicationId = cloudbeesPublisher.applicationId;
@@ -41,7 +45,7 @@ public class CloudbeesDeployer {
             throws InterruptedException, IOException {
 
         if (cloudbeesAccount == null) {
-            listener.getLogger().println(Messages._CloudbeesPublisher_noAccount());
+            listener.error(Messages.CloudbeesPublisher_noAccount());
             return false;
         }
 
@@ -56,20 +60,42 @@ public class CloudbeesDeployer {
 
 
         String warPath = null;
-        findWarPath:
+        List<String> candidates = new ArrayList<String>();
         for (ArtifactFilePathSaveAction artifactFilePathSaveAction : artifactFilePathSaveActions) {
             for (MavenArtifactWithFilePath artifactWithFilePath : artifactFilePathSaveAction.mavenArtifactWithFilePaths) {
                 if (StringUtils.equals("war", artifactWithFilePath.type)) {
-                    listener.getLogger().println(Messages.CloudbeesPublisher_WarPathFound(artifactWithFilePath));
-                    warPath = artifactWithFilePath.filePath;
-                    break findWarPath;
+                    candidates.add(artifactWithFilePath.filePath);
                 }
             }
         }
 
+        if (candidates.size() > 1) {
+            if (StringUtils.isBlank(filePattern)) {
+                listener.error(Messages.CloudbeesDeployer_AmbiguousMavenWarArtifact());
+                return false;
+            }
+            Iterator<String> it= candidates.iterator();
+            while (it.hasNext()) {
+                if (SelectorUtils.match(filePattern, it.next())) continue;
+                it.remove();
+            }
+
+            if (candidates.size() > 1) {
+                listener.error(Messages.CloudbeesDeployer_StillAmbiguousMavenWarArtifact());
+                return false;
+            }
+
+            if (candidates.size() == 0) {
+                listener.error(Messages.CloudbeesDeployer_NoWarArtifactToMatchPattern());
+                return false;
+            }
+
+            warPath = candidates.get(0);
+        }
+
         if (StringUtils.isBlank(warPath)) {
             if (StringUtils.isBlank(filePattern)) {
-                listener.getLogger().println(Messages._CloudbeesPublisher_noWarArtifacts());
+                listener.error(Messages.CloudbeesPublisher_noWarArtifacts());
                 return false;
             } else {
                 //search file in the workspace with the pattern
@@ -77,10 +103,10 @@ public class CloudbeesDeployer {
                 List<String> fileNames = build.getWorkspace().act(fileFinder);
                 listener.getLogger().println("found remote files : " + fileNames);
                 if (fileNames.size() > 1) {
-                    listener.getLogger().println(Messages.CloudbeesPublisher_ToManyFilesMatchingPattern());
+                    listener.error(Messages.CloudbeesPublisher_ToManyFilesMatchingPattern());
                     return false;
                 } else if (fileNames.size() == 0) {
-                    listener.getLogger().println(Messages._CloudbeesPublisher_noArtifactsFound(filePattern));
+                    listener.error(Messages.CloudbeesPublisher_noArtifactsFound(filePattern));
                     return false;
                 }
                 // so we use only the first found
@@ -88,6 +114,7 @@ public class CloudbeesDeployer {
             }
         }
 
+        listener.getLogger().println(Messages.CloudbeesPublisher_WarPathFound(warPath));
         doDeploy(build, listener, warPath);
 
         return true;
