@@ -26,6 +26,10 @@ public class CloudbeesApiHelper {
     // to display api call in System.out
     public static boolean verbose = Boolean.getBoolean("CloudbeesApiHelper.verbose");
 
+    // configurable ?
+    // so here last with a public static field it's possible to change tru a groovy script
+    public static String CLOUDBEES_API_URL = "https://api.cloudbees.com/api";
+
     public static ApplicationListResponse applicationsList(CloudbeesApiRequest cloudbeesApiRequest) throws Exception {
         return getBeesClient(cloudbeesApiRequest).applicationList();
     }
@@ -55,10 +59,18 @@ public class CloudbeesApiHelper {
         private final String apiKey;
         private final String secretKey;
 
+        protected CloudbeesApiRequest(String apiKey, String secretKey) {
+            this(CLOUDBEES_API_URL, apiKey, secretKey);
+        }
+
         protected CloudbeesApiRequest(String url, String apiKey, String secretKey) {
             this.url = url;
             this.apiKey = apiKey;
             this.secretKey = secretKey;
+        }
+
+        protected CloudbeesApiRequest(CloudbeesAccount cloudbeesAccount) {
+            this(CLOUDBEES_API_URL, cloudbeesAccount);
         }
 
         protected CloudbeesApiRequest(String url, CloudbeesAccount cloudbeesAccount) {
