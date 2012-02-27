@@ -20,9 +20,7 @@ import org.jenkins.plugins.cloudbees.util.FileFinder;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class CloudbeesDeployer {
 
@@ -60,7 +58,7 @@ public class CloudbeesDeployer {
 
 
         String warPath = null;
-        List<String> candidates = new ArrayList<String>();
+        Set<String> candidates = new HashSet<String>();
         for (ArtifactFilePathSaveAction artifactFilePathSaveAction : artifactFilePathSaveActions) {
             for (MavenArtifactWithFilePath artifactWithFilePath : artifactFilePathSaveAction.mavenArtifactWithFilePaths) {
                 if (StringUtils.equals("war", artifactWithFilePath.type)) {
@@ -89,8 +87,10 @@ public class CloudbeesDeployer {
                 listener.error(Messages.CloudbeesDeployer_NoWarArtifactToMatchPattern());
                 return false;
             }
+        }
 
-            warPath = candidates.get(0);
+        if (candidates.size() == 1) {
+            warPath = candidates.iterator().next();
         }
 
         if (StringUtils.isBlank(warPath)) {

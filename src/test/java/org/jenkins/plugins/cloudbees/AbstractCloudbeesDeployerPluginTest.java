@@ -36,7 +36,7 @@ public abstract class AbstractCloudbeesDeployerPluginTest  extends HudsonTestCas
         this.cloudbeesServer.startServer();
         cloudbeesAccount = new CloudbeesAccount( "olamy", "key", "so secret key" );
         CloudbeesPublisher.DESCRIPTOR.setAccounts( cloudbeesAccount );
-        CloudbeesPublisher.DescriptorImpl.CLOUDBEES_API_URL = "http://localhost:" + cloudbeesServer.getPort();
+        CloudbeesApiHelper.CLOUDBEES_API_URL = "http://localhost:" + cloudbeesServer.getPort();
     }
 
     @Override
