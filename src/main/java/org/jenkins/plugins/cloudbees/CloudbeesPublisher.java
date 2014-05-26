@@ -87,44 +87,6 @@ public class CloudbeesPublisher extends Notifier {
         this.filePattern = filePattern;
     }
 
-    @Initializer(after = InitMilestone.PLUGINS_STARTED)
-    public static void transitionAuth() throws IOException {
-        DescriptorImpl that = (DescriptorImpl) Hudson.getInstance().getDescriptor(CloudbeesPublisher.class);
-        if (that == null || that.accounts == null || that.accounts.isEmpty()) {
-            return;
-        }
-        SystemCredentialsProvider provider = SystemCredentialsProvider.getInstance();
-        if (provider == null) {
-            return;
-        }
-        boolean addMissingCredentials =
-                CredentialsProvider.lookupCredentials(CloudBeesUserWithAccountApiKey.class).isEmpty()
-                        && Boolean.parseBoolean(
-                        System.getProperty(CloudbeesPublisher.class.getName() + ".addMissingCredentials", "true"));
-        List<Credentials> credentials = provider.getCredentials();
-        for (CloudbeesAccount account : that.accounts) {
-            boolean match = false;
-            for (Iterator<Credentials> iterator = credentials.iterator(); iterator.hasNext(); ) {
-                Credentials u = iterator.next();
-                if (u instanceof CloudBeesUser) {
-                    CloudBeesUser cb = (CloudBeesUser) u;
-                    if (StringUtils.equals(cb.getAPIKey(), account.apiKey)) {
-                        match = true;
-                    } else if (StringUtils.equals(cb.getName(), account.name)) {
-                        iterator.remove();
-                    }
-                }
-            }
-            if (!match && addMissingCredentials) {
-                LOGGER.warning("Could not find matching credentials for CloudBees account " + account.name
-                        + ", please add corresponding details to the Manage Credentials screen");
-                // ugly, and not even correct but best we can do to help hint the user
-                CloudBeesUserImpl user = new CloudBeesUserImpl(CredentialsScope.GLOBAL, account.name, null);
-                credentials.add(user);
-            }
-        }
-    }
-
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.BUILD;
     }
