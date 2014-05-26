@@ -33,7 +33,7 @@
   </parent>
 
   <artifactId>cloudbees-deployer-plugin</artifactId>
-  <version>5.0</version>
+  <version>5.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <name>CloudBees Deployer Plugin</name>
@@ -64,7 +64,7 @@
   <scm>
     <connection>scm:git:git@github.com:jenkinsci/cloudbees-deployer-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/cloudbees-deployer-plugin.git</developerConnection>
-    <tag>cloudbees-deployer-plugin-5.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
