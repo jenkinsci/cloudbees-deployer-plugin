@@ -55,6 +55,8 @@ public abstract class DeploySource extends AbstractDescribableImpl<DeploySource>
     @CheckForNull
     public abstract File getApplicationFile(@NonNull Run run);
 
+    // TODO getApplicationFile(Run) variant returning Future<File>?
+
     /**
      * Gets the application file to deploy from the specified workspace or {@code null} if the workspace does
      * not have the deployable.

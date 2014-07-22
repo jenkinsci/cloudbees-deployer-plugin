@@ -64,6 +64,7 @@ public abstract class DeployTarget<T extends DeployTarget<T>> extends AbstractDe
         if (isComplete() && artifact != null) {
             File artifactFile = artifact.getApplicationFile(run);
             return !(artifactFile == null || !isArtifactFileValid(artifactFile));
+            // TODO delete artifactFile
         }
         return false;
     }

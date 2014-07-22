@@ -91,6 +91,7 @@ public class WildcardPathDeploySource extends DeploySource {
     @CheckForNull
     public File getApplicationFile(@NonNull Run run) {
         File result = null;
+        // TODO update for 1.532
         if (run.getArtifactsDir().isDirectory()) {
             FileSet fileSet = new FileSet();
             fileSet.setProject(new Project());

@@ -144,6 +144,7 @@ public class DeployNowColumn extends ListViewColumn {
                             checkedOne = true;
                             if (Boolean.TRUE.equals(instance.cache(lastDeployable, s))
                                     || instance
+                                    // TODO use variant which returns boolean
                                     .cache(lastDeployable, s, s.getApplicationFile(lastDeployable) == null)) {
                                 return false;
                             }

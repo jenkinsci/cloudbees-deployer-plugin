@@ -86,6 +86,7 @@ public class StaticSelectionDeploySource extends DeploySource {
     @Override
     @CheckForNull
     public File getApplicationFile(@NonNull Run run) {
+        // TODO update for 1.532
         if (run.getArtifactsDir().isDirectory()) {
             File file = new File(run.getArtifactsDir(), filePath);
             return file.exists() ? file : null;

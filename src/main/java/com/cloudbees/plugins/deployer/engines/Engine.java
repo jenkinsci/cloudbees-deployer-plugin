@@ -129,6 +129,7 @@ public abstract class Engine<S extends DeployHost<S, T>, T extends DeployTarget<
                                     validate(applicationFile);
                                     log("  Resolved from archived artifacts as " + applicationFile);
                                     location = process(applicationFile, target);
+                                    // TODO delete applicationFile
                                     DeployListener.notifySuccess(set, target, event);
                                     break findSource;
                                 }
