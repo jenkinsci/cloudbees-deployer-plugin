@@ -121,7 +121,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>deployer-framework</artifactId>
-      <version>1.0</version>
+      <version>86.v7b_a_4a_55b_f3ec</version>
     </dependency>
     <dependency>
       <groupId>com.cloudbees.jenkins.plugins</groupId>
