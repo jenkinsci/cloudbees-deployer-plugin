@@ -50,7 +50,6 @@ import hudson.model.BuildListener;
 import hudson.model.Cause;
 import hudson.model.Hudson;
 import hudson.remoting.VirtualChannel;
-import hudson.util.IOException2;
 import hudson.util.TimeUnit2;
 import net.jcip.annotations.Immutable;
 import org.acegisecurity.Authentication;
@@ -379,7 +378,7 @@ public class RunEngineImpl extends Engine<RunHostImpl, RunTargetImpl> {
                         .println(
                                 MessageFormat.format("[cloudbees-deployer] Can be accessed at {0}", response.getUrl()));
             } catch (Exception e) {
-                throw new IOException2(e.getMessage(), e);
+                throw new IOException(e.getMessage(), e);
             }
             return result;
         }
